@@ -1,0 +1,56 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+.table-row-cell:new-row {
+    -fx-background-color: Yellow;
+}
+
+.table-row-cell:target-flash-row .target-cell {
+    -fx-background-color: Green ;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bolder;
+}
+
+.table-row-cell:target-highlight .target-cell {
+	-fx-text-fill: #00ff00;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:stopLoss-flash-row .stopLoss-cell {
+    -fx-background-color: red ;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bolder;
+}
+
+.table-row-cell:stopLoss-highlight .stopLoss-cell {
+	-fx-text-fill: red;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:pnl-loss-highlight .pnl-cell {
+	-fx-text-fill: red;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:pnl-profit-highlight .pnl-cell {
+	-fx-text-fill: #00ff00;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:pnl-neutral-highlight .pnl-cell {
+	-fx-text-fill: white;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:uPnl-loss-highlight .uPnl-cell {
+	-fx-text-fill: red;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:uPnl-profit-highlight .uPnl-cell {
+	-fx-text-fill: #00ff00;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:uPnl-neutral-highlight .uPnl-cell {
+	-fx-text-fill: white;
+	-fx-font-weight: bolder;
+}
