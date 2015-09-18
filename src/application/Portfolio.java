@@ -32,10 +32,17 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+
 import java.util.Collections.*;
+import java.util.stream.Collectors;
 
 public class Portfolio {
 
@@ -45,11 +52,8 @@ public class Portfolio {
      * The data as an observable list of Consolidated Trades.
      */
 	
-	private ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades = FXCollections.observableArrayList();
-	private ObservableList<ConsolidatedTrade> observableListOfConsolidatedTradesTemp = FXCollections.observableArrayList();
-
-	/*
-			consolidatedTrade -> new Observable[]{
+	private ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades = FXCollections.observableArrayList(consolidatedTrade -> 
+		new Observable[]{
 			consolidatedTrade.avgPriceProperty(),
 			consolidatedTrade.stockTickerProperty(),
 			consolidatedTrade.positionProperty(),
@@ -57,14 +61,15 @@ public class Portfolio {
 			consolidatedTrade.stopLossProperty(),
 			consolidatedTrade.currentPriceProperty(),
 			consolidatedTrade.targetCautionProperty(),
-			consolidatedTrade.stopLossCautionProperty()
+			consolidatedTrade.stopLossCautionProperty(),
+			consolidatedTrade.uPnlProperty()
 	});
-	*/
 	
+	private final ReadOnlyDoubleWrapper sumUPnl;
+
 	// Read in tableView and populate HashMap
 	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades){
 		//observableListOfConsolidatedTrades.clear();
-		observableListOfConsolidatedTradesTemp.clear();
 		this.observableListOfConsolidatedTrades = observableListOfConsolidatedTrades;
 		
 		portfolio = new HashMap<String, ArrayList<Trade>>();
@@ -92,9 +97,46 @@ public class Portfolio {
 		//displayDataStructure();
 		generateConsolidatedTrade();
 		displayDataStructure();
-//		displayDataStructure();
+		
+		sumUPnl = new ReadOnlyDoubleWrapper();
+		//DoubleBinding sumUPnlBinding = Bindings.createDoubleBinding(() -> 
+		//	observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getUPnl)));		
+		
+		DoubleBinding sumUPnlBinding = new DoubleBinding() {
+
+		    {
+		        bind(observableListOfConsolidatedTrades);
+		        observableListOfConsolidatedTrades.forEach(consolidatedTrade -> bind(consolidatedTrade.uPnlProperty()));
+		        observableListOfConsolidatedTrades.addListener((Change<? extends ConsolidatedTrade> change) -> {
+		            while (change.next()) {
+		                if (change.wasAdded()) {
+		                    change.getAddedSubList().forEach(consolidatedTrade -> bind(consolidatedTrade.uPnlProperty()));
+		                }
+		                if (change.wasRemoved()) {
+		                    change.getRemoved().forEach(consolidatedTrade -> bind(consolidatedTrade.uPnlProperty()));
+		                }
+		            }
+		        });
+		    }
+
+		    @Override
+		    public double computeValue() {
+		        return observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getUPnl));
+		    }
+		};
+		
+		
+		sumUPnl.bind(sumUPnlBinding);
+		//		displayDataStructure();
 	}
 	
+	 public ReadOnlyDoubleProperty sumUPnlProperty() {
+		 return sumUPnl.getReadOnlyProperty();
+	 }
+	 
+	 public double getSumUPnl() {
+		 return sumUPnlProperty().get();
+	 }
 	
 	// display data structure
 	public void displayDataStructure(){
@@ -170,12 +212,12 @@ public class Portfolio {
 	// return list of consolidatedTrades 
 	public ObservableList<ConsolidatedTrade> getConsolidatedTrades(){
 		System.out.println("Observable List:");
-		observableListOfConsolidatedTradesTemp.addAll(observableListOfConsolidatedTrades);
-		for(ConsolidatedTrade ct : this.observableListOfConsolidatedTradesTemp){
+		for(ConsolidatedTrade ct : this.observableListOfConsolidatedTrades){
 			System.out.println(ct);
 		}
 		
 		return this.observableListOfConsolidatedTrades;
 	}
+	
 	
 }

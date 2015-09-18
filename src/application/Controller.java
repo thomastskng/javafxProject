@@ -14,6 +14,8 @@ import javafx.application.Application;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.io.IOException;
 import java.lang.*;
@@ -46,9 +48,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import java.util.function.Function;
-
-import com.sun.javafx.css.converters.StringConverter;
-
+//import com.sun.javafx.css.converters.StringConverter;
 import javafx.collections.transformation.SortedList;
 import javafx.util.Callback;
 import javafx.util.Duration;
@@ -61,7 +61,11 @@ import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
-
+import javafx.scene.Cursor;
+import javafx.util.*;
+import javafx.util.StringConverter;
+import java.text.ParseException;
+import java.util.regex.Pattern;
 
 public class Controller implements Initializable{
 	
@@ -95,8 +99,10 @@ public class Controller implements Initializable{
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPosition;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPnLHistory;
     public Portfolio initialPortfolio;
-
+    public Label fxLabel;
+	public VBox fxStockCalculator;
 	
+    private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
 	private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 	
@@ -117,7 +123,8 @@ public class Controller implements Initializable{
     /**
      * The data as an observable list of Consolidated Trades.
      */
-	private ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades = FXCollections.observableArrayList(consolidatedTrade -> new Observable[]{
+	private ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades = FXCollections.observableArrayList(consolidatedTrade -> 
+		new Observable[]{
 			consolidatedTrade.avgPriceProperty(),
 			consolidatedTrade.stockTickerProperty(),
 			consolidatedTrade.positionProperty(),
@@ -125,7 +132,9 @@ public class Controller implements Initializable{
 			consolidatedTrade.stopLossProperty(),
 			consolidatedTrade.currentPriceProperty(),
 			consolidatedTrade.targetCautionProperty(),
-			consolidatedTrade.stopLossCautionProperty()
+			consolidatedTrade.stopLossCautionProperty(),
+			consolidatedTrade.uPnlProperty()
+
 	});
 	
 	// Callback for setCellFactory
@@ -151,132 +160,9 @@ public class Controller implements Initializable{
    public static ObservableList<Trade> getObservableListOfTrades() {
        return observableListOfTrades;
    } 
+   
             
-   // create new trade 
-   public void CreateNewTrade(){
-		Stage window = new Stage();
-		window.initModality(Modality.APPLICATION_MODAL);
-		window.setTitle("Creating a New Trade");
-		window.setMinWidth(300);
-		window.setMinHeight(300);
-		
-		// Buy / Sell Choice Box
-		ChoiceBox<BuySell> buySellBox = new ChoiceBox<>();
-		buySellBox.getItems().addAll(BuySell.Buy, BuySell.Sell);
-		buySellBox.setValue(BuySell.Buy);
-		Label labelBuySell = new Label("Buy / Sell:");
-		
-		// Transaction Date: Calendar
-		// http://code.makery.ch/blog/javafx-8-date-picker/
-		DatePicker datepicker = new DatePicker();
-		datepicker.setValue(LocalDate.now());
-		datepicker.setOnAction(e -> {
-			LocalDate date = datepicker.getValue();
-			//System.out.println("Selected Date: " + date);
-		});
-		Label labelDatePicker = new Label("Transaction Date:");
-		
 
-		// capture user input: StockTicker, volume, price 
-		// Stock Ticker
-		Label labelStockTicker = new Label("Stock Ticker:");
-		TextField tfStockTicker = new TextField();
-		
-		// Volume
-		Label labelVolume = new Label("Volume:");
-		TextField tfVolume = new TextField();
-
-		// Price
-		Label labelPrice = new Label("Price:");
-		TextField tfPrice = new TextField();
-		
-		// Vertical Box stores text that prompt user:
-		VBox vb1 = new VBox();
-		vb1.getChildren().addAll(labelDatePicker,labelBuySell, labelStockTicker, labelPrice, labelVolume);
-		vb1.setSpacing(20);
-		vb1.setAlignment(Pos.CENTER_RIGHT);
-		// Vertical Box stores user's input
-		VBox vb2 = new VBox();
-		vb2.getChildren().addAll(datepicker,buySellBox,tfStockTicker, tfPrice, tfVolume);
-		vb2.setSpacing(10);
-		
-		// horizontal box that combines vb1 and vb2 
-		HBox hb1 = new HBox();
-		hb1.getChildren().addAll(vb1,vb2);
-		hb1.setSpacing(5);
-		hb1.setAlignment(Pos.CENTER);
-		
-		// create 2 buttons
-		Button okayButton = new Button("OK");
-		Button cancelButton = new Button("Cancel");
-		
-		// What happens when the OK button is clicked
-		okayButton.setOnAction(e -> {
-			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
-				AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
-			} else{
-				//System.out.println(Double.parseDouble(tfPrice.getText()));
-				boolean confirmedClose = false;
-				confirmedClose = isTypeCorrect(tfStockTicker, tfPrice, tfVolume, confirmedClose);
-				if(confirmedClose == true){
-					int stockTicker = Integer.parseInt(tfStockTicker.getText());
-					double price = Double.parseDouble(tfPrice.getText());
-					double volume = Double.parseDouble(tfVolume.getText());
-
-					/*System.out.println("Transaction date:" + datepicker.getValue());
-					System.out.println("Buy / Sell: " + buySellBox.getValue());
-					System.out.println("Stock Ticker: " + stockTicker);
-					System.out.println("Price: " + price);
-					System.out.println("Volume: " + volume);
-					*/
-					Trade newTrade = new Trade(buySellBox.getValue(), datepicker.getValue(), stockTicker, volume, price);
-					//System.out.println("new trade: " + newTrade);
-					observableListOfTrades.add(newTrade);
-					//fxTransactionLog.getItems().add(newTrade);
-					//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
-					window.close();
-				}
-			}
-		});
-
-		// bind enter key to okaybutton
-		window.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
-	        if (ev.getCode() == KeyCode.ENTER)  
-	           okayButton.fire();
-	           ev.consume(); 
-	    });
-		
-
-		// When Cancel Button is clicked
-		cancelButton.setOnAction(e ->{
-			window.close();
-		});
-		
-		// bind esc key to cancel button
-		window.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-		    @Override
-		    public void handle(KeyEvent evt) {
-		        if (evt.getCode().equals(KeyCode.ESCAPE)) {
-		        	cancelButton.fire();
-		        	evt.consume();
-		        }
-		    }
-		});
-		
-		
-		
-		HBox bottomLayout = new HBox(10);
-		bottomLayout.getChildren().addAll(okayButton, cancelButton);
-		bottomLayout.setAlignment(Pos.BOTTOM_CENTER);
-		
-		
-		VBox layout = new VBox(50);
-		layout.getChildren().addAll(hb1, bottomLayout);
-		layout.setAlignment(Pos.CENTER);
-		Scene scene = new Scene(layout);
-		window.setScene(scene);
-		window.showAndWait();
-	}
 	
 	public static boolean isFieldEmpty(TextField textField){
 		if(textField.getText() != null && ! textField.getText().trim().isEmpty()){
@@ -290,7 +176,7 @@ public class Controller implements Initializable{
 		try{
 			int stockTicker = Integer.parseInt(tfStockTicker.getText());
 			double price = Double.parseDouble(tfPrice.getText());
-			int volume = Integer.parseInt(tfVolume.getText());
+			double volume = Double.parseDouble(tfVolume.getText());
 			confirmedClose = true;
 			return confirmedClose;
 		} catch(NumberFormatException e){
@@ -357,17 +243,7 @@ public class Controller implements Initializable{
 		
 		//sortedTrades.comparatorProperty().bind(fxTransactionLog.comparatorProperty());
 		fxTransactionLog.setItems(sortedTrades);
-		//fxTransactionLog.setItems(observableListOfTrades);
-		
-		fxCreateNewTrade.setOnAction(e -> {
-			CreateNewTrade();
-			//System.out.println(results);
-		});
-		
-		fxDeleteTrade.setOnAction(e ->{
-			deleteTrade();
-		});
-		
+				
 		// enable multiple selection
 		fxTransactionLog.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
@@ -688,10 +564,237 @@ public class Controller implements Initializable{
 		}		
 	}
 	
+	   // initialise Stock Calculator
+	   public void initialiseStockCalculator(){
+			// Transaction Date: Calendar
+			// http://code.makery.ch/blog/javafx-8-date-picker/
+			DatePicker datepicker = new DatePicker();
+			datepicker.setValue(LocalDate.now());
+			datepicker.setOnAction(e -> {
+				LocalDate date = datepicker.getValue();
+				//System.out.println("Selected Date: " + date);
+			});
+			Label labelDatePicker = new Label("Date:");
+			datepicker.setPrefWidth(120);
+
+			// capture user input: StockTicker, volume, price 
+			// Stock Ticker
+			Label labelStockTicker = new Label("Ticker:");
+			TextField tfStockTicker = new TextField();
+			tfStockTicker.setPrefWidth(120);
+			tfStockTicker.setPromptText("e.g. 1,328");
+			
+			NumberFormat nf = NumberFormat.getIntegerInstance();        
+
+	        // add filter to allow for typing only integer
+			tfStockTicker.setTextFormatter( new TextFormatter<>( c ->
+	        {
+	        	if (c.getControlNewText().isEmpty()) {
+	        	    return c;
+	        	}
+	            ParsePosition parsePosition = new ParsePosition( 0 );
+	            Object object = nf.parse( c.getControlNewText(), parsePosition );
+
+	            if ( object == null || parsePosition.getIndex() < c.getControlNewText().length() || c.getControlNewText().length() > 4)
+	            {
+	                return null;
+	            }
+	            else
+	            {
+	                return c;
+	            }
+	        } ) );
+
+			Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    System.out.println("!!!!!!!!!!!" + tfStockTicker.getText());
+                    // get text and get current price
+                }
+            }));
+			
+			tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{
+				System.out.println("TextField Text Changed (newValue: " + newValue + ")");
+				delayDisplayStockInfo.play();
+			});
+			
+			// Volume
+			Label labelVolume = new Label("Volume:");
+			TextField tfVolume = new TextField();
+			tfVolume.setPrefWidth(120);
+	        TextFormatter<Double> volumeTextFormatter = new TextFormatter<>( c -> {
+	            if (partialInputPattern.matcher(c.getControlNewText()).matches()) {
+	                return c ;
+	            } else {
+	                return null ;
+	            }
+	        }) ;
+
+	        // add filter to allow for typing only double
+	        tfVolume.setTextFormatter( volumeTextFormatter);
+	        tfVolume.setPromptText("100");
+
+			// Price
+			Label labelPrice = new Label("Price:");
+			TextField tfPrice = new TextField();
+			tfPrice.setPrefWidth(120);
+	        TextFormatter<Double> priceTextFormatter = new TextFormatter<>( c -> {
+	            if (partialInputPattern.matcher(c.getControlNewText()).matches()) {
+	                return c ;
+	            } else {
+	                return null ;
+	            }
+	        }) ;
+			tfPrice.setTextFormatter( priceTextFormatter);
+			tfPrice.setPromptText("WatchList Target");
+			
+			
+			// Vertical Box stores text that prompt user:
+			VBox vb1 = new VBox();
+			vb1.getChildren().addAll(labelDatePicker,labelStockTicker, labelPrice, labelVolume);
+			vb1.setSpacing(20);
+			vb1.setAlignment(Pos.CENTER_RIGHT);
+			// Vertical Box stores user's input
+			VBox vb2 = new VBox();
+			vb2.getChildren().addAll(datepicker,tfStockTicker, tfPrice, tfVolume);
+			vb2.setSpacing(10);
+			
+			// horizontal box that combines vb1 and vb2 
+			HBox hb1 = new HBox();
+			hb1.getChildren().addAll(vb1,vb2);
+			hb1.setSpacing(5);
+			hb1.setAlignment(Pos.CENTER);
+			
+			// create 2 buttons
+			Button buyButton = new Button("Buy");
+			Button sellButton = new Button("Sell");
+			Button cancelButton = new Button("Cancel");
+			Button deleteTradeButton = new Button("Delete Trade");
+			Button addToWatchListButton = new Button("Add to WatchList");
+			
+			// What happens when the BUY button is clicked
+			buyButton.setOnAction(e -> {
+				if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+					AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
+				} else{
+					//System.out.println(Double.parseDouble(tfPrice.getText()));
+					boolean confirmedClose = false;
+					confirmedClose = isTypeCorrect(tfStockTicker, tfPrice, tfVolume, confirmedClose);
+					if(confirmedClose == true){
+						int stockTicker = Integer.parseInt(tfStockTicker.getText());
+						double price = Double.parseDouble(tfPrice.getText());
+						double volume = Double.parseDouble(tfVolume.getText());
+
+						/*System.out.println("Transaction date:" + datepicker.getValue());
+						System.out.println("Buy / Sell: " + buySellBox.getValue());
+						System.out.println("Stock Ticker: " + stockTicker);
+						System.out.println("Price: " + price);
+						System.out.println("Volume: " + volume);
+						*/
+						Trade newTrade = new Trade(BuySell.Buy, datepicker.getValue(), stockTicker, volume, price);
+						//System.out.println("new trade: " + newTrade);
+						observableListOfTrades.add(newTrade);
+						clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+
+						//fxTransactionLog.getItems().add(newTrade);
+						//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
+					}
+				}
+			});
+
+			// What happens when the Sell button is clicked
+			sellButton.setOnAction(e -> {
+				if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+					AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
+				} else{
+					//System.out.println(Double.parseDouble(tfPrice.getText()));
+					boolean confirmedClose = false;
+					confirmedClose = isTypeCorrect(tfStockTicker, tfPrice, tfVolume, confirmedClose);
+					if(confirmedClose == true){
+						int stockTicker = Integer.parseInt(tfStockTicker.getText());
+						double price = Double.parseDouble(tfPrice.getText());
+						double volume = Double.parseDouble(tfVolume.getText());
+
+						/*System.out.println("Transaction date:" + datepicker.getValue());
+						System.out.println("Buy / Sell: " + buySellBox.getValue());
+						System.out.println("Stock Ticker: " + stockTicker);
+						System.out.println("Price: " + price);
+						System.out.println("Volume: " + volume);
+						*/
+						Trade newTrade = new Trade(BuySell.Sell, datepicker.getValue(), stockTicker, volume, price);
+						//System.out.println("new trade: " + newTrade);
+						observableListOfTrades.add(newTrade);
+						clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+
+						//fxTransactionLog.getItems().add(newTrade);
+						//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
+					}
+				}
+			});
+			
+			
+			// bind enter key to buybutton
+			fxStockCalculator.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+		        if (ev.getCode() == KeyCode.ENTER)  
+		           buyButton.fire();
+		           ev.consume(); 
+		    });
+			
+
+			// When Cancel Button is clicked
+			cancelButton.setOnAction(e ->{
+				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+			});
+			
+			// When Delete Trade button is clicked
+			deleteTradeButton.setOnAction(e ->{
+				deleteTrade();
+			});
+			// bind esc key to cancel button
+			fxStockCalculator.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			    @Override
+			    public void handle(KeyEvent evt) {
+			        if (evt.getCode().equals(KeyCode.ESCAPE)) {
+			        	cancelButton.fire();
+			        	evt.consume();
+			        }
+			    }
+			});
+			
+			
+			
+			HBox bottomLayout = new HBox(10);
+			bottomLayout.getChildren().addAll(buyButton, sellButton);
+			bottomLayout.setAlignment(Pos.CENTER);
+			HBox bottomLayout2 = new HBox(10);
+			bottomLayout2.getChildren().addAll(cancelButton, deleteTradeButton);
+			bottomLayout2.setAlignment(Pos.CENTER);
+			
+			
+			//VBox layout = new VBox(50);
+			fxStockCalculator.getChildren().addAll(hb1, bottomLayout, addToWatchListButton, bottomLayout2);
+			fxStockCalculator.setAlignment(Pos.CENTER);
+			//Scene scene = new Scene(layout);
+			//window.setScene(scene);
+			//window.showAndWait();
+		}
+	
+   // clear all texfield in fxStockCalculator
+   public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume){
+		datepicker.setValue(LocalDate.now());
+		tfStockTicker.clear();
+		tfPrice.clear(); 
+		tfVolume.clear();
+		tfStockTicker.requestFocus();
+	}
+	
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
+		initialiseStockCalculator();
+		fxLabel.textProperty().bind(Bindings.format("%.3f",initialPortfolio.sumUPnlProperty()));
+		System.out.println("diu: " + initialPortfolio.sumUPnlProperty());
 	}
 	
 	

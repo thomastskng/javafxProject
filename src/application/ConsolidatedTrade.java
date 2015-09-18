@@ -43,13 +43,13 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	private StringProperty position;
 	private DoubleProperty pnl;
 	ArrayList<Double> pnl_i;
-	private DoubleProperty uPnl;
+	public final ReadOnlyDoubleWrapper uPnl;
 	private final ReadOnlyDoubleWrapper currentPrice;
 	private final ReadOnlyIntegerWrapper uPnlState;
 	private final ReadOnlyIntegerWrapper pnlState;
 	public IntegerBinding pnlStateBinding ;
 	public IntegerBinding uPnlStateBinding ;
-
+	public DoubleBinding uPnlBinding;
 	
 	// user defined instance variables
 	private DoubleProperty target;
@@ -86,7 +86,6 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		this.position 		= new SimpleStringProperty(position);
 		this.pnl_i 			= pnl_i;
 		this.pnl 			= new SimpleDoubleProperty(0);
-		this.uPnl			= new SimpleDoubleProperty(0);
 		
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
@@ -95,11 +94,18 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		priceService.setOnFailed(e -> priceService.getException().printStackTrace());
 		this.currentPrice 	= new ReadOnlyDoubleWrapper(0);
 		this.currentPrice.bind(priceService.lastValueProperty());
+		startMonitoring();
+		this.uPnl			= new ReadOnlyDoubleWrapper();
+		//uPnlBinding = Bindings.createDoubleBinding(() -> {
+		//	System.out.println("current price: " + this.currentPrice.get()  + "avg price: "+ getAvgPrice() + "vol held: " + getVolumeHeld());
+		//	return (currentPriceProperty().subtract(avgPriceProperty())).multiply(volumeHeldProperty());
+		//});
+		//uPnl.bind((this.currentPrice.subtract(this.avgPrice)).multiply(this.volumeHeld));
+		uPnl.bind((currentPriceProperty().subtract(avgPriceProperty())).multiply(volumeHeldProperty()));
 		targetCaution 		= new ReadOnlyBooleanWrapper();
 		targetCaution.bind(this.currentPrice.greaterThanOrEqualTo(this.target));
 		stopLossCaution 	= new ReadOnlyBooleanWrapper();
 		stopLossCaution.bind(this.stopLoss.greaterThanOrEqualTo(this.currentPrice));
-		startMonitoring();
 		pnlState = new ReadOnlyIntegerWrapper();
 		uPnlState = new ReadOnlyIntegerWrapper();
 		pnlStateBinding = Bindings.createIntegerBinding(() -> {
@@ -217,19 +223,17 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	}
 	
 	// pnl
-	public Double getUPnl(){
-		this.uPnl.bind((this.currentPrice.subtract(this.avgPrice)).multiply(this.volumeHeld));
+	public final Double getUPnl(){
+		//this.uPnl.bind((this.currentPrice.subtract(this.avgPrice)).multiply(this.volumeHeld));
 		//System.out.println("Unrealized: " + this.uPnl.getValue());
 		return uPnlProperty().getValue();
 	}
 	
-	public DoubleProperty uPnlProperty(){
+	public ReadOnlyDoubleProperty uPnlProperty(){
 		return this.uPnl;
 	}
 	
-	public void setUPnl(Double uPnl){
-		uPnlProperty().set(uPnl);
-	}
+
 	
 	// target
 	public double getTarget(){
@@ -328,6 +332,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
 		System.out.println("Consolidated Ticker: " + getStockTicker() + ", cp: " + cp);
+		System.out.println("getCurrentPrice(): " + getCurrentPrice());
 		return cp;
 		}
 	
@@ -352,19 +357,19 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		
 		int i = o.getPosition().compareTo(getPosition());
 		if(i != 0){
-			System.out.println("Comparing Position: " + i);
+			//System.out.println("Comparing Position: " + i);
 			return i;
 		}
 
 		i = o.getStopLossCaution().compareTo(getStopLossCaution());
 		if(i != 0){
-			System.out.println("Comparing Stop Loss: " + i);
+			//System.out.println("Comparing Stop Loss: " + i);
 			return i;
 		}
 		
 		i = o.getTargetCaution().compareTo(getTargetCaution()); 
 		if(i!= 0){
-			System.out.println("Comparing Target: " + i);
+			//System.out.println("Comparing Target: " + i);
 			return i;
 		}
 		

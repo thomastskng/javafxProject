@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
-
 <BorderPane prefHeight="700.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
    <top>
       <MenuBar prefHeight="19.0" prefWidth="164.0" BorderPane.alignment="CENTER">
@@ -86,19 +85,24 @@
                         </TableView>
                      </content>
                 </Tab>
+                  <Tab text="Untitled Tab">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                  </Tab>
               </tabs>
             </TabPane>
         </items>
       </SplitPane>
    </center>
    <right>
-      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="671.0" prefWidth="171.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="671.0" prefWidth="197.0" BorderPane.alignment="CENTER">
         <items>
             <TabPane prefHeight="357.0" prefWidth="184.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab text="Watchlist">
                      <content>
-                        <TableView prefHeight="435.0" prefWidth="184.0">
+                        <TableView prefHeight="586.0" prefWidth="209.0">
                           <columns>
                             <TableColumn prefWidth="53.0" text="Ticker" />
                             <TableColumn prefWidth="49.0" text="Price" />
@@ -111,7 +115,6 @@
             </TabPane>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
                <children>
-                  <Button mnemonicParsing="false" text="New" />
                   <Button mnemonicParsing="false" text="Remove" />
                </children>
             </HBox>
@@ -119,24 +122,44 @@
       </SplitPane>
    </right>
    <left>
-      <SplitPane dividerPositions="0.85949177877429" orientation="VERTICAL" prefHeight="671.0" prefWidth="140.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.28550074738415543, 0.6696562032884903" orientation="VERTICAL" prefHeight="671.0" prefWidth="212.0" BorderPane.alignment="CENTER">
          <items>
-            <TitledPane animated="false" mnemonicParsing="true" prefHeight="571.0" prefWidth="294.0" text="asd">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="544.0" prefWidth="75.0">
-                     <children>
-                        <TreeView editable="true" layoutX="20.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <ListView layoutX="31.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" style="-fx-background-color: #2F2F2F;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-              </content>
-            </TitledPane>
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
-               <children>
-                  <Button fx:id="fxCreateNewTrade" mnemonicParsing="false" text="New Trade" />
-                  <Button fx:id="fxDeleteTrade" mnemonicParsing="false" text="Delete Trade" />
-               </children>
-            </VBox>
+            <Accordion>
+              <panes>
+                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="571.0" prefWidth="294.0" text="file">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="544.0" prefWidth="75.0">
+                           <children>
+                              <TreeView editable="true" layoutX="20.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <ListView layoutX="31.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" style="-fx-background-color: #2F2F2F;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </TitledPane>
+              </panes>
+            </Accordion>
+            <VBox fx:id="fxStockCalculator" alignment="CENTER" minHeight="261.0" prefHeight="261.0" prefWidth="210.0" spacing="10.0" />
+            <Accordion>
+              <panes>
+                <TitledPane animated="false" text="untitled 1">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Label fx:id="fxLabel" contentDisplay="TOP" layoutX="101.0" prefHeight="116.0" prefWidth="107.0" text="Label" />
+                           </children></AnchorPane>
+                  </content>
+                </TitledPane>
+                <TitledPane animated="false" text="untitled 2">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Button fx:id="fxDeleteTrade" layoutX="82.0" layoutY="24.0" mnemonicParsing="false" text="Delete Trade" />
+                              <Button fx:id="fxCreateNewTrade" layoutX="88.0" layoutY="60.0" mnemonicParsing="false" text="New Trade" />
+                           </children></AnchorPane>
+                  </content>
+                </TitledPane>
+              </panes>
+            </Accordion>
          </items>
       </SplitPane>
    </left>
