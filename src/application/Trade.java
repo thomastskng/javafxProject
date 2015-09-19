@@ -24,6 +24,8 @@ import javafx.scene.control.TableCell;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -55,16 +57,15 @@ public class Trade implements Comparable<Trade>{
 	private ReadOnlyDoubleWrapper transactionFee;
 	
 	private final ReadOnlyDoubleWrapper currentPrice;
+    private final ReadOnlyStringWrapper stockName;
 	private ReadOnlyBooleanWrapper caution;
 	
-	private final ScheduledService<Number> priceService = new ScheduledService<Number>() {
+	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
-	    public Task<Number> createTask(){
-			return new Task<Number>() {
+	    public Task<StockScrapedInfo> createTask(){
+			return new Task<StockScrapedInfo>() {
 				@Override
-				public Number call() throws InterruptedException, IOException {
-					//System.out.println(counter++);
-					
+				public StockScrapedInfo call() throws InterruptedException, IOException {					
 					return getCurrentPriceFromAAStock();
 					//return getCurrentPriceFromGoogle();
 				}
@@ -82,7 +83,7 @@ public class Trade implements Comparable<Trade>{
 		this.volume = new SimpleDoubleProperty(volume);
 		this.price = new SimpleDoubleProperty(price);
 		this.transactionFee = new ReadOnlyDoubleWrapper();
-		this.transactionFee.bind(this.price.multiply(this.volume).multiply(0.00125));
+		this.transactionFee.bind(this.price.multiply(this.volume).multiply(0.0025));
 
 		// thread counter keeps refreshing
 		counter = 0;
@@ -91,10 +92,29 @@ public class Trade implements Comparable<Trade>{
 		creationTime = Calendar.getInstance();
 		// multi-threading current price
 		
-		priceService.setPeriod(Duration.seconds(10));
-		priceService.setOnFailed(e -> priceService.getException().printStackTrace());
+		stockService.setPeriod(Duration.seconds(10));
+		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
+		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
-		this.currentPrice.bind(priceService.lastValueProperty());
+		this.stockName = new ReadOnlyStringWrapper("");
+		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
+	    							if(stockService.getLastValue() != null){
+	    								return stockService.getLastValue().getCurrentPrice();
+	    							} else{
+	    								return (Double) 0.0;
+	    							}
+	    						}, stockService.lastValueProperty()
+	    							));
+			this.stockName.bind(Bindings.createStringBinding(() -> {
+									if(stockService.getLastValue() != null){
+										return stockService.getLastValue().getStockName();
+									} else{
+										return "";
+									}
+								}, stockService.lastValueProperty()));
+									
+
+
 		this.caution = new ReadOnlyBooleanWrapper();
 		this.caution.bind(this.currentPrice.greaterThan(this.price));
 		startMonitoring();
@@ -205,6 +225,15 @@ public class Trade implements Comparable<Trade>{
 		 return currentPriceProperty().get();
 	 }
 	 
+	 public ReadOnlyStringProperty stockNameProperty(){
+		 return this.stockName.getReadOnlyProperty();
+	 }
+	 
+	 public String getStockName(){
+		 return stockNameProperty().get();
+	 }
+	 
+	 
 	 public ReadOnlyBooleanProperty cautionProperty(){
 		 return this.caution.getReadOnlyProperty();
 	 }
@@ -215,11 +244,11 @@ public class Trade implements Comparable<Trade>{
 	 
 	 // multi-threading
 	 public final void startMonitoring() {
-		 priceService.restart();
+		 stockService.restart();
 	 }
 
 	 public final void stopMonitoring() {
-		 priceService.cancel();
+		 stockService.cancel();
 	 }
 	
 	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
@@ -231,24 +260,21 @@ public class Trade implements Comparable<Trade>{
 		}
 	 
 	 
-	public double getCurrentPriceFromAAStock() throws InterruptedException, IOException{
-		ObservableList<String> output = FXCollections.observableArrayList();
+	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
 		Document doc = Jsoup.connect(url).get();
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		output.add(elements.get(0).ownText());
-		double cp = Double.parseDouble(output.get(0));
-		Elements testing = doc.select("title");
-		String[] str2 = testing.get(0).ownText().split("\\(");
-		output.add(str2[0]);
-		System.out.print("output: ");
-		for(int i = 0; i < output.size() ; i++){
-			System.out.print(output.get(i) + " ");
-		}
-		System.out.println("");
+		double cp = Double.parseDouble(elements.get(0).ownText());
+		Elements sn = doc.select("title");
+		String[] title = sn.get(0).ownText().split("\\(");
+		String stockName = title[0];
 		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
-		return cp;
-		}
+		//if("null".equals(cp) || stockName == null){
+		//	return new StockScrapedInfo("",0.0);
+		//} else{
+			return new StockScrapedInfo(stockName, cp);
+		//}
+	}
 	 
 	
 	public String toString(){

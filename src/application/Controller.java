@@ -70,10 +70,7 @@ import java.util.regex.Pattern;
 public class Controller implements Initializable{
 	
 	@FXML
-	// Button
-	public Button fxCreateNewTrade;
-	public Button fxDeleteTrade;
-	public Button fxEditTrade;
+
 	// History Log 
 	public TableView<Trade> fxTransactionLog;
 	public TableColumn<Trade, LocalDate> fxTransactionLogTransactionDate;
@@ -84,6 +81,7 @@ public class Controller implements Initializable{
 	public TableColumn<Trade, Number> fxTransactionLogTransactionFee;
 	public TableColumn<Trade,Number> fxTransactionLogCurrentPrice;
 	public TableColumn<Trade,String> fxTransactionLogRemarks;
+	public TableColumn<Trade,String> fxTransactionLogStockName;
 	
 	// Consolidated Trades
 	public TableView<ConsolidatedTrade> fxPortfolio;
@@ -98,9 +96,22 @@ public class Controller implements Initializable{
 	public TableColumn <ConsolidatedTrade, Number> fxPortfolioPnL;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPosition;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPnLHistory;
+	public TableColumn <ConsolidatedTrade, String> fxPortfolioStockName;
+
+	
     public Portfolio initialPortfolio;
-    public Label fxLabel;
-	public VBox fxStockCalculator;
+    public StockLookUp lookUpTicker;
+    
+    // Button
+	// Label
+    public Label fxLabel1;
+    public Label fxLabel2;
+    public Label fxLabel3;
+    public Label fxLabel4;
+
+    // Titled pane
+    public TitledPane fxStockLookUp;
+    public VBox fxStockCalculator;
 	
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
@@ -116,7 +127,9 @@ public class Controller implements Initializable{
 				trade.stockTickerProperty(),
 				trade.buySellProperty(),
 				trade.volumeProperty(),
+				//trade.stockNameProperty(),
 				trade.priceProperty()
+
 		}
 	);
 	
@@ -256,7 +269,7 @@ public class Controller implements Initializable{
 		fxTransactionLogTransactionFee.setCellValueFactory(cellData -> cellData.getValue().transactionFeeProperty());
 		fxTransactionLogRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
 		fxTransactionLogCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
-
+		fxTransactionLogStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
 		
 		// define setCellFactory
 		fxTransactionLogTransactionDate.setCellFactory(col -> new DateEditingCell());
@@ -265,7 +278,7 @@ public class Controller implements Initializable{
 	    fxTransactionLogVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		fxTransactionLogTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
 		fxTransactionLogRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
-	
+
 		// initialise buySell choicebox
 		ObservableList<String> buySellList = FXCollections.observableArrayList(new String("Buy"), new String("Sell"));
 		fxTransactionLogBuySell.setCellFactory(ChoiceBoxTableCell.forTableColumn(buySellList));
@@ -477,6 +490,7 @@ public class Controller implements Initializable{
 		fxPortfolioPnL.setCellValueFactory(cellData -> cellData.getValue().pnlProperty());
 		fxPortfolioPosition.setCellValueFactory(cellData -> cellData.getValue().positionProperty());
 		fxPortfolioPnLHistory.setCellValueFactory(new PropertyValueFactory<ConsolidatedTrade,String>("pnl_i"));
+		fxPortfolioStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
 		// define setCellFactory
 		fxPortfolioAvgPrice.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
 		fxPortfolioVolumeHeld.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
@@ -575,13 +589,13 @@ public class Controller implements Initializable{
 				//System.out.println("Selected Date: " + date);
 			});
 			Label labelDatePicker = new Label("Date:");
-			datepicker.setPrefWidth(120);
+			datepicker.setPrefWidth(105);
 
 			// capture user input: StockTicker, volume, price 
 			// Stock Ticker
 			Label labelStockTicker = new Label("Ticker:");
 			TextField tfStockTicker = new TextField();
-			tfStockTicker.setPrefWidth(120);
+			tfStockTicker.setPrefWidth(100);
 			tfStockTicker.setPromptText("e.g. 1,328");
 			
 			NumberFormat nf = NumberFormat.getIntegerInstance();        
@@ -605,23 +619,31 @@ public class Controller implements Initializable{
 	            }
 	        } ) );
 
+			
 			Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    System.out.println("!!!!!!!!!!!" + tfStockTicker.getText());
-                    // get text and get current price
+                	lookUpTicker = new StockLookUp(Integer.parseInt(tfStockTicker.getText()));
+                	fxLabel1.textProperty().bind(lookUpTicker.stockNameProperty());
+    				fxLabel2.textProperty().bind(Bindings.format("%.3f", lookUpTicker.currentPriceProperty()));		
+                	System.out.println("LookUP: " + tfStockTicker.getText());
                 }
             }));
 			
 			tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{
 				System.out.println("TextField Text Changed (newValue: " + newValue + ")");
+				if(!newValue.equals("")){	
 				delayDisplayStockInfo.play();
+				} else{
+					System.out.println("TextField Text Changed (newValue: " + newValue + ") Nothing for real");
+					//fxLabel2.textProperty().unbind();
+				}
 			});
 			
 			// Volume
 			Label labelVolume = new Label("Volume:");
 			TextField tfVolume = new TextField();
-			tfVolume.setPrefWidth(120);
+			tfVolume.setPrefWidth(100);
 	        TextFormatter<Double> volumeTextFormatter = new TextFormatter<>( c -> {
 	            if (partialInputPattern.matcher(c.getControlNewText()).matches()) {
 	                return c ;
@@ -637,7 +659,7 @@ public class Controller implements Initializable{
 			// Price
 			Label labelPrice = new Label("Price:");
 			TextField tfPrice = new TextField();
-			tfPrice.setPrefWidth(120);
+			tfPrice.setPrefWidth(100);
 	        TextFormatter<Double> priceTextFormatter = new TextFormatter<>( c -> {
 	            if (partialInputPattern.matcher(c.getControlNewText()).matches()) {
 	                return c ;
@@ -793,8 +815,10 @@ public class Controller implements Initializable{
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
 		initialiseStockCalculator();
-		fxLabel.textProperty().bind(Bindings.format("%.3f",initialPortfolio.sumUPnlProperty()));
-		System.out.println("diu: " + initialPortfolio.sumUPnlProperty());
+		//fxStockLookUp.setExpanded(true);
+		System.out.println("Titled pane expanded ? " + fxStockLookUp.isExpanded());
+		fxLabel3.textProperty().bind(Bindings.format("Asset: %.3f",initialPortfolio.totalAssetValProperty()));
+		fxLabel4.textProperty().bind(Bindings.format("uPnl/Pnl: %.3f/%.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
 	}
 	
 	

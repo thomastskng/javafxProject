@@ -45,11 +45,14 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	ArrayList<Double> pnl_i;
 	public final ReadOnlyDoubleWrapper uPnl;
 	private final ReadOnlyDoubleWrapper currentPrice;
+	private final ReadOnlyDoubleWrapper mktValue;
+    private final ReadOnlyStringWrapper stockName;
 	private final ReadOnlyIntegerWrapper uPnlState;
 	private final ReadOnlyIntegerWrapper pnlState;
 	public IntegerBinding pnlStateBinding ;
 	public IntegerBinding uPnlStateBinding ;
 	public DoubleBinding uPnlBinding;
+	
 	
 	// user defined instance variables
 	private DoubleProperty target;
@@ -62,13 +65,12 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	
 	
 	// Concurrent task to get price
-	private final ScheduledService<Number> priceService = new ScheduledService<Number>() {
+	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
-	    public Task<Number> createTask(){
-			return new Task<Number>() {
+	    public Task<StockScrapedInfo> createTask(){
+			return new Task<StockScrapedInfo>() {
 				@Override
-				public Number call() throws InterruptedException, IOException {
-					//System.out.println(counter++);					
+				public StockScrapedInfo call() throws InterruptedException, IOException {
 					return getCurrentPriceFromAAStock();
 					//return getCurrentPriceFromGoogle();
 				}
@@ -90,17 +92,29 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
 		// multi-threading
-		priceService.setPeriod(Duration.seconds(10));
-		priceService.setOnFailed(e -> priceService.getException().printStackTrace());
+		stockService.setPeriod(Duration.seconds(10));
+		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
 		this.currentPrice 	= new ReadOnlyDoubleWrapper(0);
-		this.currentPrice.bind(priceService.lastValueProperty());
+		this.stockName = new ReadOnlyStringWrapper("");
+		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
+	    							if(stockService.getLastValue() != null){
+	    								return stockService.getLastValue().getCurrentPrice();
+	    							} else{
+	    								return (Double) 0.0;
+	    							}
+	    						}, stockService.lastValueProperty()
+	    							));
+			this.stockName.bind(Bindings.createStringBinding(() -> {
+									if(stockService.getLastValue() != null){
+										return stockService.getLastValue().getStockName();
+									} else{
+										return "";
+									}
+								}, stockService.lastValueProperty()));
 		startMonitoring();
+		this.mktValue = new ReadOnlyDoubleWrapper();
+		this.mktValue.bind(currentPriceProperty().multiply(volumeHeldProperty()));
 		this.uPnl			= new ReadOnlyDoubleWrapper();
-		//uPnlBinding = Bindings.createDoubleBinding(() -> {
-		//	System.out.println("current price: " + this.currentPrice.get()  + "avg price: "+ getAvgPrice() + "vol held: " + getVolumeHeld());
-		//	return (currentPriceProperty().subtract(avgPriceProperty())).multiply(volumeHeldProperty());
-		//});
-		//uPnl.bind((this.currentPrice.subtract(this.avgPrice)).multiply(this.volumeHeld));
 		uPnl.bind((currentPriceProperty().subtract(avgPriceProperty())).multiply(volumeHeldProperty()));
 		targetCaution 		= new ReadOnlyBooleanWrapper();
 		targetCaution.bind(this.currentPrice.greaterThanOrEqualTo(this.target));
@@ -222,6 +236,15 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		pnlProperty().set(pnl);
 	}
 	
+	// market value
+	public final Double getMktValue(){
+		return mktValueProperty().getValue();
+	}
+	
+	public ReadOnlyDoubleProperty mktValueProperty(){
+		return this.mktValue.getReadOnlyProperty();
+	}
+	
 	// pnl
 	public final Double getUPnl(){
 		//this.uPnl.bind((this.currentPrice.subtract(this.avgPrice)).multiply(this.volumeHeld));
@@ -269,6 +292,14 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		return currentPriceProperty().get();
 	}
 	
+	 public ReadOnlyStringProperty stockNameProperty(){
+		 return this.stockName.getReadOnlyProperty();
+	 }
+	 
+	 public String getStockName(){
+		 return stockNameProperty().get();
+	 }
+	
 	public String getPnl_i(){
 		return pnl_i.toString();
 	}
@@ -310,11 +341,11 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	 
 	// multi-threading
 	public final void startMonitoring() {
-		 priceService.restart();
+		stockService.restart();
 	}
 
 	public final void stopMonitoring() {
-		priceService.cancel();
+		stockService.cancel();
 	}
 	
 	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
@@ -326,15 +357,17 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		}
 	 
 	 
-	public double getCurrentPriceFromAAStock() throws InterruptedException, IOException{		
+	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
 		Document doc = Jsoup.connect(url).get();
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
-		System.out.println("Consolidated Ticker: " + getStockTicker() + ", cp: " + cp);
-		System.out.println("getCurrentPrice(): " + getCurrentPrice());
-		return cp;
-		}
+		Elements sn = doc.select("title");
+		String[] title = sn.get(0).ownText().split("\\(");
+		String stockName = title[0];
+		System.out.println("Consolidated Ticker: " + getStockTicker() + ", cp: " + cp + ", " + getCurrentPrice());
+		return new StockScrapedInfo(stockName, cp);
+	}
 	
 	
 	public String toString(){

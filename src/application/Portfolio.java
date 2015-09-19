@@ -66,10 +66,11 @@ public class Portfolio {
 	});
 	
 	private final ReadOnlyDoubleWrapper sumUPnl;
+	private final ReadOnlyDoubleWrapper sumPnl;
+	private final ReadOnlyDoubleWrapper totalAssetVal;
 
 	// Read in tableView and populate HashMap
 	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades){
-		//observableListOfConsolidatedTrades.clear();
 		this.observableListOfConsolidatedTrades = observableListOfConsolidatedTrades;
 		
 		portfolio = new HashMap<String, ArrayList<Trade>>();
@@ -98,6 +99,7 @@ public class Portfolio {
 		generateConsolidatedTrade();
 		displayDataStructure();
 		
+		// sum of Unrealised Pnl
 		sumUPnl = new ReadOnlyDoubleWrapper();
 		//DoubleBinding sumUPnlBinding = Bindings.createDoubleBinding(() -> 
 		//	observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getUPnl)));		
@@ -125,19 +127,89 @@ public class Portfolio {
 		    }
 		};
 		
-		
 		sumUPnl.bind(sumUPnlBinding);
-		//		displayDataStructure();
+	
+		// total value of Asset 
+		totalAssetVal = new ReadOnlyDoubleWrapper();
+		DoubleBinding totalAssetValBinding = new DoubleBinding() {
+
+		    {
+		        bind(observableListOfConsolidatedTrades);
+		        observableListOfConsolidatedTrades.forEach(consolidatedTrade -> bind(consolidatedTrade.mktValueProperty()));
+		        observableListOfConsolidatedTrades.addListener((Change<? extends ConsolidatedTrade> change) -> {
+		            while (change.next()) {
+		                if (change.wasAdded()) {
+		                    change.getAddedSubList().forEach(consolidatedTrade -> bind(consolidatedTrade.mktValueProperty()));
+		                }
+		                if (change.wasRemoved()) {
+		                    change.getRemoved().forEach(consolidatedTrade -> bind(consolidatedTrade.mktValueProperty()));
+		                }
+		            }
+		        });
+		    }
+
+		    @Override
+		    public double computeValue() {
+		        return observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getMktValue));
+		    }
+		};
+		totalAssetVal.bind(totalAssetValBinding);
+		
+		// sum of realised Pnl
+		sumPnl = new ReadOnlyDoubleWrapper();
+		//DoubleBinding sumUPnlBinding = Bindings.createDoubleBinding(() -> 
+		//	observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getUPnl)));		
+		
+		DoubleBinding sumPnlBinding = new DoubleBinding() {
+
+		    {
+		        bind(observableListOfConsolidatedTrades);
+		        observableListOfConsolidatedTrades.forEach(consolidatedTrade -> bind(consolidatedTrade.pnlProperty()));
+		        observableListOfConsolidatedTrades.addListener((Change<? extends ConsolidatedTrade> change) -> {
+		            while (change.next()) {
+		                if (change.wasAdded()) {
+		                    change.getAddedSubList().forEach(consolidatedTrade -> bind(consolidatedTrade.pnlProperty()));
+		                }
+		                if (change.wasRemoved()) {
+		                    change.getRemoved().forEach(consolidatedTrade -> bind(consolidatedTrade.pnlProperty()));
+		                }
+		            }
+		        });
+		    }
+
+		    @Override
+		    public double computeValue() {
+		        return observableListOfConsolidatedTrades.stream().collect(Collectors.summingDouble(ConsolidatedTrade::getPnl));
+		    }
+		};
+		
+		sumPnl.bind(sumPnlBinding);
 	}
 	
-	 public ReadOnlyDoubleProperty sumUPnlProperty() {
-		 return sumUPnl.getReadOnlyProperty();
-	 }
+	public ReadOnlyDoubleProperty sumUPnlProperty() {
+		return sumUPnl.getReadOnlyProperty();
+	}
 	 
-	 public double getSumUPnl() {
-		 return sumUPnlProperty().get();
-	 }
+	public double getSumUPnl() {
+		return sumUPnlProperty().get();
+	}
 	
+	public ReadOnlyDoubleProperty sumPnlProperty() {
+		return sumPnl.getReadOnlyProperty();
+	}
+	 
+	public double getSumPnl() {
+		return sumPnlProperty().get();
+	}
+	
+	public ReadOnlyDoubleProperty totalAssetValProperty(){
+		return totalAssetVal.getReadOnlyProperty();
+	}
+	
+	public double getTotalAssetVal(){
+		return totalAssetValProperty().get();
+	}
+	 
 	// display data structure
 	public void displayDataStructure(){
 		System.out.println("Display Data Structure:");
