@@ -40,6 +40,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.ObjectExpression;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
@@ -53,6 +54,8 @@ import javafx.collections.transformation.SortedList;
 import javafx.util.Callback;
 import javafx.util.Duration;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 import java.util.*;
 import javafx.css.PseudoClass;
 import javafx.beans.binding.BooleanBinding;
@@ -109,9 +112,12 @@ public class Controller implements Initializable{
     public Label fxLabel3;
     public Label fxLabel4;
 
-    // Titled pane
+    // Titled pane for looking up and displaying stock info 
     public TitledPane fxStockLookUp;
+    // Vertical Box - Input Stock Calculator
     public VBox fxStockCalculator;
+    // Horizontal Box - Watch List panel for adding new stocks
+	public HBox fxWatchListPanel;
 	
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
@@ -633,10 +639,12 @@ public class Controller implements Initializable{
 			tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{
 				System.out.println("TextField Text Changed (newValue: " + newValue + ")");
 				if(!newValue.equals("")){	
-				delayDisplayStockInfo.play();
+					fxLabel2.textProperty().unbind();
+					delayDisplayStockInfo.play();
 				} else{
 					System.out.println("TextField Text Changed (newValue: " + newValue + ") Nothing for real");
-					//fxLabel2.textProperty().unbind();
+					delayDisplayStockInfo.stop();
+					fxLabel2.textProperty().unbind();
 				}
 			});
 			
@@ -793,14 +801,12 @@ public class Controller implements Initializable{
 			bottomLayout2.setAlignment(Pos.CENTER);
 			
 			
-			//VBox layout = new VBox(50);
-			fxStockCalculator.getChildren().addAll(hb1, bottomLayout, addToWatchListButton, bottomLayout2);
+			fxStockCalculator.getChildren().addAll(hb1, bottomLayout, 
+					//addToWatchListButton, 
+					bottomLayout2);
 			fxStockCalculator.setAlignment(Pos.CENTER);
-			//Scene scene = new Scene(layout);
-			//window.setScene(scene);
-			//window.showAndWait();
 		}
-	
+	  
    // clear all texfield in fxStockCalculator
    public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume){
 		datepicker.setValue(LocalDate.now());
@@ -810,18 +816,72 @@ public class Controller implements Initializable{
 		tfStockTicker.requestFocus();
 	}
 	
+	public void initializeWatchListPanel(){
+		TextField tfTicker = new TextField();
+		tfTicker.setPromptText("Ticker");
+		tfTicker.setPrefWidth(50);
+		
+		NumberFormat nf = NumberFormat.getIntegerInstance();        
+        // add filter to allow for typing only integer
+		tfTicker.setTextFormatter( new TextFormatter<>( c ->
+        {
+        	if (c.getControlNewText().isEmpty()) {
+        	    return c;
+        	}
+            ParsePosition parsePosition = new ParsePosition( 0 );
+            Object object = nf.parse( c.getControlNewText(), parsePosition );
+
+            if ( object == null || parsePosition.getIndex() < c.getControlNewText().length() || c.getControlNewText().length() > 4)
+            {
+                return null;
+            }
+            else
+            {
+                return c;
+            }
+        } ) );
+		
+		TextField tfTarget = new TextField();
+		tfTarget.setPromptText("Target price");
+		tfTarget.setPrefWidth(50);
+        TextFormatter<Double> targetFormatter = new TextFormatter<>( c -> {
+            if (partialInputPattern.matcher(c.getControlNewText()).matches()) {
+                return c ;
+            } else {
+                return null ;
+            }
+        }) ;
+
+        // add filter to allow for typing only double
+        tfTarget.setTextFormatter( targetFormatter);
+		
+		Button addToWatchList = new Button("+");
+		Button removeFromWatchList = new Button("-");
+		
+		fxWatchListPanel.getChildren().addAll(tfTicker,tfTarget,addToWatchList,removeFromWatchList);
+		fxWatchListPanel.setSpacing(5);
+		fxWatchListPanel.setAlignment(Pos.CENTER);
+	}
+   
+   
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
 		initialiseStockCalculator();
-		//fxStockLookUp.setExpanded(true);
-		System.out.println("Titled pane expanded ? " + fxStockLookUp.isExpanded());
-		fxLabel3.textProperty().bind(Bindings.format("Asset: %.3f",initialPortfolio.totalAssetValProperty()));
-		fxLabel4.textProperty().bind(Bindings.format("uPnl/Pnl: %.3f/%.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
+		initializeWatchListPanel();
+		
+        Locale locale  = new Locale("en", "UK");
+        String pattern = "###,###.###;-###,###.###";
+        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(locale);
+        df.applyPattern(pattern);
+        df.setMinimumFractionDigits(3);
+        df.setMaximumFractionDigits(10);
+		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
+		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
+
+		
 	}
 	
-	
-
 	
 }

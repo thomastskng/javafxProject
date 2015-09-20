@@ -102,67 +102,66 @@
         <items>
             <TabPane prefHeight="357.0" prefWidth="184.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab text="Watchlist">
+                <Tab fx:id="fxWatchList" text="Watchlist">
                      <content>
-                        <TableView prefHeight="586.0" prefWidth="209.0">
+                        <TableView fx:id="fxWatchList" prefHeight="586.0" prefWidth="209.0">
                           <columns>
-                            <TableColumn prefWidth="53.0" text="Ticker" />
-                            <TableColumn prefWidth="49.0" text="Price" />
-                              <TableColumn prefWidth="63.0" text="Target" />
+                            <TableColumn fx:id="fxWatchListTicker" prefWidth="53.0" text="Ticker" />
+                            <TableColumn fx:id="fxWatchListPrice" prefWidth="49.0" text="Price" />
+                              <TableColumn fx:id="fxWatchListTarget" prefWidth="63.0" text="Target" />
+                              <TableColumn prefWidth="75.0" text="Name" />
                           </columns>
                         </TableView>
                      </content>
                 </Tab>
               </tabs>
             </TabPane>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
-               <children>
-                  <Button mnemonicParsing="false" text="Remove" />
-               </children>
-            </HBox>
+            <HBox fx:id="fxWatchListPanel" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" />
         </items>
       </SplitPane>
    </right>
    <left>
-      <SplitPane dividerPositions="0.3393124065769806, 0.7414050822122571" maxWidth="175.0" minHeight="175.0" orientation="VERTICAL" prefHeight="671.0" prefWidth="175.0" BorderPane.alignment="CENTER">
-         <items>
-            <TitledPane animated="false" mnemonicParsing="true" prefHeight="571.0" prefWidth="294.0" text="file">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="544.0" prefWidth="75.0">
+      <ScrollPane prefHeight="671.0" prefWidth="198.0" BorderPane.alignment="CENTER">
+         <content>
+            <SplitPane dividerPositions="0.3183856502242152, 0.6875934230194319" orientation="VERTICAL" prefHeight="671.0" prefWidth="149.0">
+              <items>
+                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="223.0" prefWidth="177.0" text="file">
+                    <content>
+                      <AnchorPane prefHeight="198.0" prefWidth="175.0" />
+                    </content>
+                  </TitledPane>
+                  <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
+                  <VBox prefHeight="316.0" prefWidth="177.0">
                      <children>
-                        <TreeView editable="true" layoutX="20.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <ListView layoutX="31.4" layoutY="21.4" prefHeight="544.0" prefWidth="114.0" style="-fx-background-color: #2F2F2F;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="190.0" prefWidth="177.0" text="Stock Info Lookup" underline="true">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
+                                 <children>
+                                    <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="57.0" layoutY="1.0" prefHeight="123.0" prefWidth="131.0" text="Last">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="203.0" text="Name (Ticker)">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="fxLabel4" contentDisplay="CENTER" layoutY="116.0" prefHeight="34.0" prefWidth="199.0" text="Sum uPnl/Pnl:">
+                                       <font>
+                                          <Font size="11.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="fxLabel3" layoutY="99.0" prefHeight="24.0" prefWidth="200.0" text="Asset:" />
+                                 </children>
+                              </AnchorPane>
+                        </content>
+                      </TitledPane>
                      </children>
-                  </AnchorPane>
-              </content>
-            </TitledPane>
-            <VBox fx:id="fxStockCalculator" alignment="CENTER" maxWidth="175.0" minHeight="261.0" prefHeight="261.0" prefWidth="176.0" spacing="10.0" />
-            <VBox prefHeight="221.0" prefWidth="202.0">
-               <children>
-                <TitledPane fx:id="fxStockLookUp" prefHeight="218.0" prefWidth="202.0" text="Stock Info Lookup" underline="true">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="195.0" prefWidth="200.0">
-                           <children>
-                              <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="57.0" layoutY="1.0" prefHeight="123.0" prefWidth="131.0" text="Last">
-                                 <font>
-                                    <Font name="System Bold" size="24.0" />
-                                 </font></Label>
-                              <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="203.0" text="Name (Ticker)">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font>
-                              </Label>
-                              <Label fx:id="fxLabel4" contentDisplay="CENTER" layoutY="116.0" prefHeight="34.0" prefWidth="199.0" text="Sum uPnl/Pnl:">
-                                 <font>
-                                    <Font size="11.0" />
-                                 </font></Label>
-                              <Label fx:id="fxLabel3" layoutY="99.0" prefHeight="24.0" prefWidth="200.0" text="Asset:" />
-                           </children></AnchorPane>
-                  </content>
-                </TitledPane>
-               </children>
-            </VBox>
-         </items>
-      </SplitPane>
+                  </VBox>
+              </items>
+            </SplitPane>
+         </content>
+      </ScrollPane>
    </left>
 </BorderPane>
