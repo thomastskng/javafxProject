@@ -121,11 +121,11 @@
       </SplitPane>
    </right>
    <left>
-      <ScrollPane prefHeight="671.0" prefWidth="198.0" BorderPane.alignment="CENTER">
+      <ScrollPane prefHeight="675.0" prefWidth="210.0" BorderPane.alignment="CENTER">
          <content>
-            <SplitPane dividerPositions="0.3183856502242152, 0.6875934230194319" orientation="VERTICAL" prefHeight="671.0" prefWidth="149.0">
+            <SplitPane dividerPositions="0.3617339312406577, 0.695067264573991" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
               <items>
-                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="223.0" prefWidth="177.0" text="file">
+                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="239.0" prefWidth="189.0" text="file">
                     <content>
                       <AnchorPane prefHeight="198.0" prefWidth="175.0" />
                     </content>
@@ -133,7 +133,7 @@
                   <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
                   <VBox prefHeight="316.0" prefWidth="177.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="190.0" prefWidth="177.0" text="Stock Info Lookup" underline="true">
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="216.0" prefWidth="189.0" text="Stock Info Lookup" underline="true">
                         <content>
                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
                                  <children>
