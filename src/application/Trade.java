@@ -116,7 +116,7 @@ public class Trade implements Comparable<Trade>{
 
 
 		this.caution = new ReadOnlyBooleanWrapper();
-		this.caution.bind(this.currentPrice.greaterThan(this.price));
+		this.caution.bind(currentPriceProperty().greaterThan(priceProperty()));
 		startMonitoring();
 		
 	}	
@@ -263,17 +263,14 @@ public class Trade implements Comparable<Trade>{
 	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
 		Document doc = Jsoup.connect(url).get();
+		//System.out.println(doc);
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
 		Elements sn = doc.select("title");
 		String[] title = sn.get(0).ownText().split("\\(");
 		String stockName = title[0];
 		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
-		//if("null".equals(cp) || stockName == null){
-		//	return new StockScrapedInfo("",0.0);
-		//} else{
-			return new StockScrapedInfo(stockName, cp);
-		//}
+		return new StockScrapedInfo(stockName, cp);
 	}
 	 
 	

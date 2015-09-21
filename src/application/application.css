@@ -54,3 +54,25 @@
 	-fx-text-fill: white;
 	-fx-font-weight: bolder;
 }
+
+.table-row-cell:ticker-LastLessThanEqualToTarget-flash-row .wlTicker-cell {
+    -fx-background-color: Green ;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bolder;
+}
+
+.table-row-cell:ticker-LastLessThanEqualToTarget-highlight .wlTicker-cell {
+	-fx-text-fill: #00ff00;
+	-fx-font-weight: bolder;
+}
+
+.table-row-cell:ticker-LastGreaterThanEqualToTarget-flash-row .wlTicker-cell {
+    -fx-background-color: red ;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bolder;
+}
+
+.table-row-cell:ticker-LastGreaterThanEqualToTarget-highlight .wlTicker-cell {
+	-fx-text-fill: red;
+	-fx-font-weight: bolder;
+}

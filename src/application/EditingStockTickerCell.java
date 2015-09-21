@@ -14,10 +14,11 @@ import java.text.ParsePosition;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class EditingStockTickerCell extends TableCell<Trade,String>{
+public class EditingStockTickerCell<T> extends TableCell<T,String>{
 	private TextField textField;
 	 
-    public EditingStockTickerCell() {
+    public EditingStockTickerCell(String...styleClasses) {
+        getStyleClass().addAll(styleClasses);
     }
 
     @Override

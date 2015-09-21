@@ -98,19 +98,19 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
     }
     
     private void pnlChanged(Number fNew) {
-    	System.out.println("PNL:");
+    	//System.out.println("PNL:");
         if ((int) fNew >0) {
-        	System.out.println(fNew + " > 0");
+        	//System.out.println(fNew + " > 0");
         	pseudoClassStateChanged(PS_PNL_PROFIT_HL, true);
         	pseudoClassStateChanged(PS_PNL_NEUTRAL_HL, false);
         	pseudoClassStateChanged(PS_PNL_LOSS_HL, false);
         } else if((int) fNew < 0 ){
-        	System.out.println(fNew + " < 0");
+        	//System.out.println(fNew + " < 0");
         	pseudoClassStateChanged(PS_PNL_LOSS_HL, true);
         	pseudoClassStateChanged(PS_PNL_NEUTRAL_HL, false);
             pseudoClassStateChanged(PS_PNL_PROFIT_HL, false);
         } else{
-        	System.out.println(fNew + " = 0");
+        	//System.out.println(fNew + " = 0");
             pseudoClassStateChanged(PS_PNL_NEUTRAL_HL, true);
         	pseudoClassStateChanged(PS_PNL_LOSS_HL, false);
             pseudoClassStateChanged(PS_PNL_PROFIT_HL, false);
@@ -118,20 +118,20 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
     }
     
     private void uPnlChanged(Number fNew) {
-    	System.out.println("U_PNL:");
+    	//System.out.println("U_PNL:");
 
         if ((int) fNew >0) {
-        	System.out.println(fNew + " > 0");
+        	//System.out.println(fNew + " > 0");
         	pseudoClassStateChanged(PS_UPNL_PROFIT_HL, true);
         	pseudoClassStateChanged(PS_UPNL_NEUTRAL_HL, false);
         	pseudoClassStateChanged(PS_UPNL_LOSS_HL, false);
         } else if((int) fNew < 0 ){
-        	System.out.println(fNew + " < 0");
+        	//System.out.println(fNew + " < 0");
         	pseudoClassStateChanged(PS_UPNL_LOSS_HL, true);
         	pseudoClassStateChanged(PS_UPNL_NEUTRAL_HL, false);
             pseudoClassStateChanged(PS_UPNL_PROFIT_HL, false);
         } else{
-        	System.out.println(fNew + " = 0");
+        	//System.out.println(fNew + " = 0");
             pseudoClassStateChanged(PS_UPNL_NEUTRAL_HL, true);
         	pseudoClassStateChanged(PS_UPNL_LOSS_HL, false);
             pseudoClassStateChanged(PS_UPNL_PROFIT_HL, false);

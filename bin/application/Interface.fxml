@@ -98,18 +98,19 @@
       </SplitPane>
    </center>
    <right>
-      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="671.0" prefWidth="197.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="675.0" prefWidth="325.0" BorderPane.alignment="CENTER">
         <items>
             <TabPane prefHeight="357.0" prefWidth="184.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab fx:id="fxWatchList" text="Watchlist">
+                <Tab text="Watchlist">
                      <content>
-                        <TableView fx:id="fxWatchList" prefHeight="586.0" prefWidth="209.0">
+                        <TableView fx:id="fxWatchList" editable="true" prefHeight="586.0" prefWidth="209.0">
                           <columns>
-                            <TableColumn fx:id="fxWatchListTicker" prefWidth="53.0" text="Ticker" />
-                            <TableColumn fx:id="fxWatchListPrice" prefWidth="49.0" text="Price" />
-                              <TableColumn fx:id="fxWatchListTarget" prefWidth="63.0" text="Target" />
-                              <TableColumn prefWidth="75.0" text="Name" />
+                            <TableColumn fx:id="fxWatchListTicker" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" text="Ticker" />
+                            <TableColumn fx:id="fxWatchListCurrentPrice" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" text="Last" />
+                              <TableColumn fx:id="fxWatchListTarget" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" text="Target" />
+                              <TableColumn fx:id="fxWatchListCondition" minWidth="100.0" prefWidth="100.0" />
+                              <TableColumn fx:id="fxWatchListStockName" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Name" />
                           </columns>
                         </TableView>
                      </content>
