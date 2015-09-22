@@ -360,15 +360,27 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
 		Document doc = Jsoup.connect(url).get();
+		//System.out.println(doc);
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
 		Elements sn = doc.select("title");
 		String[] title = sn.get(0).ownText().split("\\(");
 		String stockName = title[0];
-		System.out.println("Consolidated Ticker: " + getStockTicker() + ", cp: " + cp + ", " + getCurrentPrice());
-		return new StockScrapedInfo(stockName, cp);
+		Elements lotSize = doc.select("td:contains(Lot Size) + td");
+		double ls = Double.parseDouble(lotSize.get(0).ownText());
+		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
+		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
+		System.out.println("lot size:" + ls);
+		Elements suspension = doc.select("font:contains(Suspension)");
+		String lastUpdate;
+		if(suspension.text().contains("Suspension")){
+			lastUpdate = "Suspension";
+		} else{
+			lastUpdate = lastUpdateTime.get(0).ownText();
+
+		}
+		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
-	
 	
 	public String toString(){
 		return getStockTicker() + ": " + 

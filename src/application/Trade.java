@@ -8,6 +8,7 @@ import java.io.*;
 import javafx.util.Duration;
 import java.time.LocalDate;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
@@ -26,6 +27,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -58,7 +60,11 @@ public class Trade implements Comparable<Trade>{
 	
 	private final ReadOnlyDoubleWrapper currentPrice;
     private final ReadOnlyStringWrapper stockName;
+	private final ReadOnlyStringWrapper lastUpdate;
+	private final ReadOnlyDoubleWrapper  lotSize;
+
 	private ReadOnlyBooleanWrapper caution;
+	
 	
 	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -97,22 +103,36 @@ public class Trade implements Comparable<Trade>{
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
+		this.lotSize = new ReadOnlyDoubleWrapper(0);
+		this.lastUpdate = new ReadOnlyStringWrapper("");
 		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
 	    							if(stockService.getLastValue() != null){
 	    								return stockService.getLastValue().getCurrentPrice();
 	    							} else{
 	    								return (Double) 0.0;
 	    							}
-	    						}, stockService.lastValueProperty()
-	    							));
-			this.stockName.bind(Bindings.createStringBinding(() -> {
+	    						}, stockService.lastValueProperty()));
+		this.stockName.bind(Bindings.createStringBinding(() -> {
 									if(stockService.getLastValue() != null){
 										return stockService.getLastValue().getStockName();
 									} else{
 										return "";
 									}
 								}, stockService.lastValueProperty()));
-									
+		this.lastUpdate.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getLastUpdate();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		this.lotSize.bind(Bindings.createDoubleBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getLotSize();
+			} else{
+				return (Double) 0.0;
+			}
+		}, stockService.lastValueProperty()));
 
 
 		this.caution = new ReadOnlyBooleanWrapper();
@@ -209,47 +229,63 @@ public class Trade implements Comparable<Trade>{
 
 	
 	public ReadOnlyDoubleProperty transactionFeeProperty() {
-		 return this.transactionFee.getReadOnlyProperty();
-	 }
+		return this.transactionFee.getReadOnlyProperty();
+	}
 
-	 public final double getTransactionFee() {
-		 return transactionFeeProperty().get();
-	 }
+	public final double getTransactionFee() {
+		return transactionFeeProperty().get();
+	}
 	
 	 
-	 public ReadOnlyDoubleProperty currentPriceProperty(){
-		 return this.currentPrice.getReadOnlyProperty();
-	 }
+	public ReadOnlyDoubleProperty currentPriceProperty(){
+		return this.currentPrice.getReadOnlyProperty();
+	}
 	 
-	 public final double getCurrentPrice(){
+	public final double getCurrentPrice(){
 		 return currentPriceProperty().get();
-	 }
+	}
 	 
-	 public ReadOnlyStringProperty stockNameProperty(){
-		 return this.stockName.getReadOnlyProperty();
-	 }
+	public ReadOnlyStringProperty stockNameProperty(){
+		return this.stockName.getReadOnlyProperty();
+	}
 	 
-	 public String getStockName(){
-		 return stockNameProperty().get();
-	 }
+	public String getStockName(){
+		return stockNameProperty().get();
+	}
 	 
+	public ReadOnlyDoubleProperty lotSizeProperty(){
+		return this.lotSize.getReadOnlyProperty();
+	}
 	 
-	 public ReadOnlyBooleanProperty cautionProperty(){
-		 return this.caution.getReadOnlyProperty();
-	 }
+	public final double getLotSize(){
+		return lotSizeProperty().get();
+	}
 	 
-	 public final Boolean getCaution(){
-		 return cautionProperty().getValue();
-	 }
+	public ReadOnlyStringProperty lastUpdateProperty(){
+		return this.lastUpdate.getReadOnlyProperty();
+	}
+	 
+	public String getLastUpdate(){
+		return lastUpdateProperty().get();
+	}
+	 
+	public ReadOnlyBooleanProperty cautionProperty(){
+		return this.caution.getReadOnlyProperty();
+	}
+	 
+	public final Boolean getCaution(){
+		return cautionProperty().getValue();
+	}
+	 
 	 
 	 // multi-threading
-	 public final void startMonitoring() {
-		 stockService.restart();
-	 }
+	public final void startMonitoring() {
+		stockService.restart();
+	}
 
-	 public final void stopMonitoring() {
-		 stockService.cancel();
-	 }
+	public final void stopMonitoring() {
+		stockService.cancel();
+	}
 	
 	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
 		String url = "https://www.google.com.hk/finance?q=" + getStockTicker() + "&ei=yF14VYC4F4Wd0ASb64CoCw";
@@ -269,8 +305,20 @@ public class Trade implements Comparable<Trade>{
 		Elements sn = doc.select("title");
 		String[] title = sn.get(0).ownText().split("\\(");
 		String stockName = title[0];
+		Elements lotSize = doc.select("td:contains(Lot Size) + td");
+		double ls = Double.parseDouble(lotSize.get(0).ownText());
 		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
-		return new StockScrapedInfo(stockName, cp);
+		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
+		System.out.println("lot size:" + ls);
+		Elements suspension = doc.select("font:contains(Suspension)");
+		String lastUpdate;
+		if(suspension.text().contains("Suspension")){
+			lastUpdate = "Suspension";
+		} else{
+			lastUpdate = lastUpdateTime.get(0).ownText();
+
+		}
+		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
 	 
 	

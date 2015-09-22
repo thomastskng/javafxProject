@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.*?>
@@ -65,7 +66,7 @@
                   </Tab>
               </tabs>
             </TabPane>
-            <TabPane prefHeight="280.0" prefWidth="868.0" rotateGraphic="true">
+            <TabPane fx:id="fxTabPaneLower" prefHeight="280.0" prefWidth="868.0" rotateGraphic="true">
               <tabs>
                 <Tab closable="false" text="Transaction Log">
                      <content>
@@ -87,11 +88,6 @@
                         </TableView>
                      </content>
                 </Tab>
-                  <Tab text="Untitled Tab">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                    </content>
-                  </Tab>
               </tabs>
             </TabPane>
         </items>
@@ -124,7 +120,7 @@
    <left>
       <ScrollPane prefHeight="675.0" prefWidth="210.0" BorderPane.alignment="CENTER">
          <content>
-            <SplitPane dividerPositions="0.3617339312406577, 0.695067264573991" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
+            <SplitPane dividerPositions="0.3183856502242152, 0.6203288490284006" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
               <items>
                   <TitledPane animated="false" mnemonicParsing="true" prefHeight="239.0" prefWidth="189.0" text="file">
                     <content>
@@ -134,11 +130,11 @@
                   <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
                   <VBox prefHeight="316.0" prefWidth="177.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="216.0" prefWidth="189.0" text="Stock Info Lookup" underline="true">
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="217.0" prefWidth="205.0" text="Stock Info Lookup" underline="true">
                         <content>
                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
                                  <children>
-                                    <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="57.0" layoutY="1.0" prefHeight="123.0" prefWidth="131.0" text="Last">
+                                    <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="71.0" prefHeight="99.0" prefWidth="112.0" text="Last">
                                        <font>
                                           <Font name="System Bold" size="24.0" />
                                        </font>
@@ -148,12 +144,22 @@
                                           <Font size="12.0" />
                                        </font>
                                     </Label>
-                                    <Label fx:id="fxLabel4" contentDisplay="CENTER" layoutY="116.0" prefHeight="34.0" prefWidth="199.0" text="Sum uPnl/Pnl:">
+                                    <Label fx:id="fxLabel5" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="62.0" layoutY="76.0" prefHeight="25.0" prefWidth="131.0" text="Lot Size">
                                        <font>
                                           <Font size="11.0" />
                                        </font>
+                                       <padding>
+                                          <Insets right="2.5" />
+                                       </padding>
                                     </Label>
-                                    <Label fx:id="fxLabel3" layoutY="99.0" prefHeight="24.0" prefWidth="200.0" text="Asset:" />
+                                    <Label fx:id="fxLabel6" alignment="TOP_RIGHT" layoutX="24.0" layoutY="101.0" prefHeight="27.0" prefWidth="179.0" text="Last Update" AnchorPane.rightAnchor="0.0">
+                                       <font>
+                                          <Font size="10.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets right="2.5" />
+                                       </padding>
+                                    </Label>
                                  </children>
                               </AnchorPane>
                         </content>
@@ -165,4 +171,23 @@
          </content>
       </ScrollPane>
    </left>
+   <bottom>
+      <FlowPane prefHeight="32.0" prefWidth="1400.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="fxLabel4" contentDisplay="CENTER" prefHeight="34.0" prefWidth="199.0" text="Sum uPnl/Pnl:">
+               <font>
+                  <Font size="11.0" />
+               </font>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </Label>
+            <Label fx:id="fxLabel3" prefHeight="24.0" prefWidth="200.0" text="Asset:">
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </Label>
+         </children>
+      </FlowPane>
+   </bottom>
 </BorderPane>

@@ -51,6 +51,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import java.util.function.Function;
+
+import javafx.collections.transformation.FilteredList;
 //import com.sun.javafx.css.converters.StringConverter;
 import javafx.collections.transformation.SortedList;
 import javafx.util.Callback;
@@ -121,7 +123,12 @@ public class Controller implements Initializable{
     public Label fxLabel2;
     public Label fxLabel3;
     public Label fxLabel4;
+    public Label fxLabel5;
+    public Label fxLabel6;
 
+
+    // Tab pane
+    public TabPane fxTabPaneLower;
     // Titled pane for looking up and displaying stock info 
     public TitledPane fxStockLookUp;
     // Vertical Box - Input Stock Calculator
@@ -137,7 +144,7 @@ public class Controller implements Initializable{
     /**
      * The data as an observable list of Trade.
      */
-	private static ObservableList<Trade> observableListOfTrades = FXCollections.observableArrayList(trade ->
+	private ObservableList<Trade> observableListOfTrades = FXCollections.observableArrayList(trade ->
 		new Observable[]{
 				trade.transactionDateProperty(),
 				trade.stockTickerProperty(),
@@ -145,7 +152,6 @@ public class Controller implements Initializable{
 				trade.volumeProperty(),
 				//trade.stockNameProperty(),
 				trade.priceProperty()
-
 		}
 	);
 	
@@ -159,7 +165,7 @@ public class Controller implements Initializable{
 			consolidatedTrade.positionProperty(),
 			consolidatedTrade.targetProperty(),
 			consolidatedTrade.stopLossProperty(),
-			consolidatedTrade.currentPriceProperty(),
+			//consolidatedTrade.currentPriceProperty(),
 			consolidatedTrade.targetCautionProperty(),
 			consolidatedTrade.stopLossCautionProperty(),
 			consolidatedTrade.uPnlProperty()
@@ -171,15 +177,18 @@ public class Controller implements Initializable{
      */
 	private ObservableList<WatchListStock> observableListOfWatchListStocks = FXCollections.observableArrayList(watchListStock -> 
 		new Observable[]{
-			watchListStock.currentPriceProperty(),
+			//watchListStock.currentPriceProperty(),
 			watchListStock.conditionProperty(),
 			watchListStock.stockTickerProperty(),
 			watchListStock.targetProperty(),
 			watchListStock.alertProperty(),
-			watchListStock.currentPriceProperty()
+			//watchListStock.currentPriceProperty()
 	});
 	
-	
+    /*
+     * The data as an filtered list of Trade.
+     */
+	private FilteredList<Trade> filterListOfTrades = new FilteredList<>(observableListOfTrades, trade -> trade.stockTickerProperty().get().equals(""));
 	// Callback for setCellFactory
 	Callback<TableColumn<Trade,Number>, TableCell<Trade,Number>> NumberCellFactory =
             new Callback<TableColumn<Trade,Number>, TableCell<Trade,Number>>() {
@@ -200,7 +209,7 @@ public class Controller implements Initializable{
     * Returns the data as an observable list of Persons. 
     * @return
     */
-   public static ObservableList<Trade> getObservableListOfTrades() {
+   public ObservableList<Trade> getObservableListOfTrades() {
        return observableListOfTrades;
    } 
    
@@ -244,6 +253,89 @@ public class Controller implements Initializable{
 			wlStock.stopMonitoring();
 		}
 		observableListOfWatchListStocks.removeAll(wlStockSelected);
+	}
+	
+	public void initializeFilteredTable(){
+		Tab filteredTab = new Tab();
+		filteredTab.setClosable(false);
+		fxTabPaneLower.getTabs().add(filteredTab);
+		filteredTab.setText("Filtered History");
+		TableView<Trade> filterTable = new TableView();
+		filteredTab.setContent(filterTable);
+		filterTable.setItems(filterListOfTrades);
+		filterTable.setEditable(true);
+
+		filterListOfTrades.addListener(new ListChangeListener<Trade>(){
+			  @Override
+	            public void onChanged(ListChangeListener.Change change) {
+				  filterTable.setItems(filterListOfTrades);
+			  }
+		});
+
+		filterTable.setItems(filterListOfTrades);
+		// enable multiple selection
+		filterTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		
+		TableColumn<Trade, LocalDate> filterTableTransactionDate = new TableColumn("Date");
+		TableColumn<Trade, String> filterTableStockName = new TableColumn("Stock Name");
+		TableColumn<Trade, String> filterTableStockTicker = new TableColumn("Ticker");
+		TableColumn<Trade, String> filterTableBuySell = new TableColumn("Buy/Sell");
+		TableColumn<Trade, Number> filterTablePrice = new TableColumn("Price");
+		TableColumn<Trade, Number> filterTableVolume = new TableColumn("Volume");
+		TableColumn<Trade, Number> filterTableTransactionFee = new TableColumn("Transaction Fee");
+		TableColumn<Trade, Number> filterTableCurrentPrice = new TableColumn("Last");
+		TableColumn<Trade, String> filterTableRemarks = new TableColumn("Remarks");
+
+		filterTable.getColumns().addAll(filterTableTransactionDate,filterTableStockName,filterTableStockTicker,filterTableBuySell,filterTablePrice,filterTableVolume,filterTableTransactionFee,filterTableCurrentPrice,filterTableRemarks);
+		
+		
+		// define setCellValueFactory
+		filterTableTransactionDate.setCellValueFactory(cellData -> cellData.getValue().transactionDateProperty());
+		filterTableStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
+		filterTableStockTicker.setCellValueFactory(cellData -> cellData.getValue().stockTickerProperty());
+		filterTableBuySell.setCellValueFactory(cellData -> cellData.getValue().buySellProperty());
+		filterTablePrice.setCellValueFactory(cellData -> cellData.getValue().priceProperty());
+		filterTableVolume.setCellValueFactory(cellData -> cellData.getValue().volumeProperty());
+		filterTableTransactionFee.setCellValueFactory(cellData -> cellData.getValue().transactionFeeProperty());
+		filterTableCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
+		filterTableRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
+		
+		// define setCellFactory
+		filterTableTransactionDate.setCellFactory(col -> new DateEditingCell());
+		filterTableStockTicker.setCellFactory(stockTickerCellFactory);
+		filterTablePrice.setCellFactory(col -> new EditingNumberCell<Trade>("price-cell"));
+		filterTableVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
+		filterTableTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
+		filterTableRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		// initialise buySell choicebox
+		ObservableList<String> buySellList = FXCollections.observableArrayList(new String("Buy"), new String("Sell"));
+		filterTableBuySell.setCellFactory(ChoiceBoxTableCell.forTableColumn(buySellList));
+		filterTableBuySell.setOnEditCommit(
+				new EventHandler<CellEditEvent<Trade, String>>() {
+					@Override
+					public void handle(CellEditEvent<Trade, String> t) {
+						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setBuySell(t.getNewValue());
+					}
+				});
+		
+		// initialise Transaction Date
+		//fxTransactionLogTransactionDate.setCellValueFactory(new PropertyValueFactory<Trade,LocalDate>("transactionDate"));
+
+		
+		//initialise Stock Ticker
+		//fxTransactionLogStockTicker.setCellValueFactory(new PropertyValueFactory<Trade,String>("stockTicker"));
+		//fxTransactionLogStockTicker.setCellFactory(TextFieldTableCell.forTableColumn());		
+
+		
+		filterTableStockTicker.setOnEditCommit(
+				new EventHandler<CellEditEvent<Trade, String>>() {
+					@Override
+					public void handle(CellEditEvent<Trade, String> t) {
+						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setStockTicker(t.getNewValue());
+					}
+				});
+		
 	}
 	
 	// initialise fxTransactionLog 
@@ -581,8 +673,7 @@ public class Controller implements Initializable{
 		});
 		
 		
-		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty));
-
+		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::stockTickerProperty, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty, observableListOfTrades, filterListOfTrades, fxTabPaneLower));
 	}
 	
 	// refresh Portfolio whenever there is any change in the Transaction Log
@@ -829,22 +920,29 @@ public class Controller implements Initializable{
 		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
 			@Override
             public void handle(ActionEvent actionEvent) {
+				fxLabel2.textProperty().unbind();
+				fxLabel5.textProperty().unbind();
+
+		        Locale locale  = new Locale("en", "UK");
             	lookUpTicker = new StockLookUp(Integer.parseInt(tfStockTicker.getText()));
             	fxLabel1.textProperty().bind(lookUpTicker.stockNameProperty());
-				fxLabel2.textProperty().bind(Bindings.format("%.3f", lookUpTicker.currentPriceProperty()));		
-            	System.out.println("LookUP: " + tfStockTicker.getText());
+				fxLabel2.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));		
+				fxLabel5.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
+				fxLabel6.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
+				System.out.println("LookUP: " + tfStockTicker.getText());
+            	
             }
         }));
 			
 		tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{
 			System.out.println("TextField Text Changed (newValue: " + newValue + ")");
 			if(!newValue.equals("")){	
-				fxLabel2.textProperty().unbind();
+				//fxLabel2.textProperty().unbind();
 				delayDisplayStockInfo.play();
 			} else{
 				System.out.println("TextField Text Changed (newValue: " + newValue + ") Nothing for real");
 				delayDisplayStockInfo.stop();
-				fxLabel2.textProperty().unbind();
+				//fxLabel2.textProperty().unbind();
 			}
 		});
 		
@@ -1117,6 +1215,7 @@ public class Controller implements Initializable{
 		initialiseStockCalculator();
 		initializeWatchListPanel();
 		initializeFxWatchList();
+		initializeFilteredTable();
         Locale locale  = new Locale("en", "UK");
         String pattern = "###,###.###;-###,###.###";
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(locale);
@@ -1125,7 +1224,6 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-
 		
 	}
 	

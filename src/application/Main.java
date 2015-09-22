@@ -119,8 +119,8 @@ public class Main extends Application {
             // Reading XML from the file and unmarshalling: XML -> Java Objects
             TradeListWrapper wrapper = (TradeListWrapper) um.unmarshal(file);
 
-            Controller.getObservableListOfTrades().clear();
-            Controller.getObservableListOfTrades().addAll(wrapper.getTrades());
+            //Controller.getObservableListOfTrades().clear();
+           // Controller.getObservableListOfTrades().addAll(wrapper.getTrades());
 
             // Save the file path to the registry.
             setTradeFilePath(file);
@@ -148,7 +148,7 @@ public class Main extends Application {
 
             // Wrapping our person data.
             TradeListWrapper wrapper = new TradeListWrapper();
-            wrapper.setTrades(Controller.getObservableListOfTrades());
+            //wrapper.setTrades(Controller.getObservableListOfTrades());
 
             // Marshalling and saving XML to the file (Java Objects -> XML)
             m.marshal(wrapper, file);

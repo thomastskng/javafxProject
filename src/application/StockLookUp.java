@@ -38,8 +38,9 @@ public class StockLookUp{
 	
 	private StringProperty stockTicker;
 	private final ReadOnlyDoubleWrapper currentPrice;
+	private final ReadOnlyDoubleWrapper lotSize;
     private final ReadOnlyStringWrapper stockName;
-	
+    private final ReadOnlyStringWrapper lastUpdate;
 	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
 	    public Task<StockScrapedInfo> createTask(){
@@ -63,21 +64,36 @@ public class StockLookUp{
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
+		this.lotSize = new ReadOnlyDoubleWrapper(0);
+		this.lastUpdate = new ReadOnlyStringWrapper("");
 		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
 	    							if(stockService.getLastValue() != null){
 	    								return stockService.getLastValue().getCurrentPrice();
 	    							} else{
 	    								return (Double) 0.0;
 	    							}
-	    						}, stockService.lastValueProperty()
-	    							));
-			this.stockName.bind(Bindings.createStringBinding(() -> {
+	    						}, stockService.lastValueProperty()));
+		this.stockName.bind(Bindings.createStringBinding(() -> {
 									if(stockService.getLastValue() != null){
 										return stockService.getLastValue().getStockName();
 									} else{
 										return "";
 									}
 								}, stockService.lastValueProperty()));
+		this.lastUpdate.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getLastUpdate();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		this.lotSize.bind(Bindings.createDoubleBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getLotSize();
+			} else{
+				return (Double) 0.0;
+			}
+		}, stockService.lastValueProperty()));	
 		startMonitoring();
 	}	
 	
@@ -112,6 +128,21 @@ public class StockLookUp{
 		return stockNameProperty().get();
 	}
 	 
+	public ReadOnlyDoubleProperty lotSizeProperty(){
+		return this.lotSize.getReadOnlyProperty();
+	}
+	 
+	public final double getLotSize(){
+		return lotSizeProperty().get();
+	}
+	 
+	public ReadOnlyStringProperty lastUpdateProperty(){
+		return this.lastUpdate.getReadOnlyProperty();
+	}
+	 
+	public String getLastUpdate(){
+		return lastUpdateProperty().get();
+	}
 	
 	// multi-threading
 	public final void startMonitoring() {
@@ -125,13 +156,26 @@ public class StockLookUp{
 	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
 		Document doc = Jsoup.connect(url).get();
+		//System.out.println(doc);
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
 		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("-");
+		String[] title = sn.get(0).ownText().split("\\(");
 		String stockName = title[0];
+		Elements lotSize = doc.select("td:contains(Lot Size) + td");
+		double ls = Double.parseDouble(lotSize.get(0).ownText());
 		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
-		return new StockScrapedInfo(stockName, cp);
+		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
+		System.out.println("lot size:" + ls);
+		Elements suspension = doc.select("font:contains(Suspension)");
+		String lastUpdate;
+		if(suspension.text().contains("Suspension")){
+			lastUpdate = "Suspension";
+		} else{
+			lastUpdate = lastUpdateTime.get(0).ownText();
+
+		}
+		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
 
 }

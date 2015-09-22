@@ -1,19 +1,27 @@
 package application;
 
 import java.util.function.Function;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.binding.ObjectExpression;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.css.PseudoClass;
+import javafx.event.EventHandler;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.util.Duration;
 import javafx.beans.binding.IntegerExpression;
+import javafx.scene.input.MouseEvent;
 
 public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
 
@@ -33,31 +41,44 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
     private final ObjectExpression<T> recentItem;
     private final InvalidationListener recentlyAddedListener = fObs -> recentItemChanged();
 
+    private final Function<T, StringExpression> tickerExtractor;
     private final Function<T, BooleanExpression> targetExtractor;
     private final Function<T, BooleanExpression> stopLossExtractor;
     private final Function<T, IntegerExpression> uPnlExtractor;
     private final Function<T, IntegerExpression> pnlExtractor;
-
     
     private final ChangeListener<Boolean> targetListener = (fObs, fOld, fNew) -> targetChanged(fNew);
     private final ChangeListener<Boolean> stopLossListener = (fObs, fOld, fNew) -> stopLossChanged(fNew);
     private final ChangeListener<Number> uPnlListener = (fObs, fOld, fNew) -> uPnlChanged(fNew);
     private final ChangeListener<Number> pnlListener = (fObs, fOld, fNew) -> pnlChanged(fNew);
 
+    private TabPane fxTabPaneLower;
     
+    /**
+     * The data as an observable list of Trade.
+     */
+	private ObservableList<Trade> observableListOfTrades;
+	private FilteredList<Trade> filterListOfTrades;
+	
     private final Timeline targetFlashTimeline;
     private final Timeline stopLossFlashTimeline;
 
 
-    public AnimatedPortfolioTableRow(ObjectExpression<T> fRecentlyAddedProperty,Function<T, BooleanExpression> targetExtractor, Function<T, BooleanExpression> stopLossExtractor, Function<T,IntegerExpression> uPnlExtractor, Function<T,IntegerExpression> pnlExtractor) {
+    public AnimatedPortfolioTableRow(ObjectExpression<T> fRecentlyAddedProperty,Function<T,StringExpression> tickerExtractor,Function<T, BooleanExpression> targetExtractor, Function<T, BooleanExpression> stopLossExtractor, Function<T,IntegerExpression> uPnlExtractor, Function<T,IntegerExpression> pnlExtractor, ObservableList<Trade> observableListOfTrades, FilteredList<Trade> filterListOfTrades, TabPane fxTabPaneLower) {
         recentItem = fRecentlyAddedProperty;
         recentItem.addListener(new WeakInvalidationListener(recentlyAddedListener));
 
+        this.tickerExtractor = tickerExtractor;
         this.targetExtractor = targetExtractor;
         this.stopLossExtractor = stopLossExtractor;
         this.pnlExtractor = pnlExtractor;
         this.uPnlExtractor = uPnlExtractor;
         
+        this.fxTabPaneLower = fxTabPaneLower;
+        
+        this.observableListOfTrades = observableListOfTrades;
+        this.filterListOfTrades = filterListOfTrades;
+       
         targetFlashTimeline = new Timeline(
         		new KeyFrame(Duration.seconds(0.5), e -> pseudoClassStateChanged(PS_TARGET_HL, false)),
                 new KeyFrame(Duration.seconds(0.5), e -> pseudoClassStateChanged(PS_TARGET_FLASH, true)),
@@ -71,6 +92,22 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
         		new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_STOPLOSS_HL, true)),
                 new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_STOPLOSS_FLASH, false)));
         stopLossFlashTimeline.setCycleCount(Animation.INDEFINITE);
+        
+        setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && (!isEmpty()) ) {
+                final StringExpression tickerBE = tickerExtractor.apply(getItem());
+                filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(tickerBE.get()));
+                System.out.println(tickerBE.get());
+                
+                fxTabPaneLower.getSelectionModel().select(1);
+                fxTabPaneLower.getTabs().get(1).setText("Filtered History: " + tickerBE.get());  
+                //.setItems(filterListOfTrades)
+                ((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).setItems(filterListOfTrades);
+                System.out.println(((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).getItems().size());
+                System.out.println(filterListOfTrades.size());
+                System.out.println(observableListOfTrades.size());
+          }
+        });
     }
 
     private void targetChanged(boolean fNew) {
@@ -201,4 +238,7 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
         }
         recentItemChanged();
     }
+    
+    	
+    
 }
