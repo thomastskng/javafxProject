@@ -12,29 +12,7 @@
 
 <BorderPane prefHeight="700.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
    <top>
-      <MenuBar prefHeight="19.0" prefWidth="164.0" BorderPane.alignment="CENTER">
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-              <MenuItem mnemonicParsing="false" text="New" />
-                  <MenuItem mnemonicParsing="false" text="Open" />
-                  <MenuItem mnemonicParsing="false" text="Save" />
-                  <MenuItem mnemonicParsing="false" text="Save As" />
-                  <MenuItem mnemonicParsing="false" text="Exit" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
+      <MenuBar fx:id="fxMenuBar" prefHeight="19.0" prefWidth="164.0" BorderPane.alignment="CENTER" />
    </top>
    <center>
       <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="671.0" prefWidth="1102.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
@@ -94,7 +72,7 @@
       </SplitPane>
    </center>
    <right>
-      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="675.0" prefWidth="325.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.9312406576980568" orientation="VERTICAL" prefHeight="637.0" prefWidth="280.0" BorderPane.alignment="CENTER">
         <items>
             <TabPane prefHeight="357.0" prefWidth="184.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
@@ -118,13 +96,16 @@
       </SplitPane>
    </right>
    <left>
-      <ScrollPane prefHeight="675.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+      <ScrollPane prefHeight="637.0" prefWidth="225.0" BorderPane.alignment="CENTER">
          <content>
             <SplitPane dividerPositions="0.3183856502242152, 0.6203288490284006" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
               <items>
                   <TitledPane animated="false" mnemonicParsing="true" prefHeight="239.0" prefWidth="189.0" text="file">
                     <content>
-                      <AnchorPane prefHeight="198.0" prefWidth="175.0" />
+                      <AnchorPane prefHeight="198.0" prefWidth="175.0">
+                           <children>
+                              <TreeView fx:id="fxFileTree" prefHeight="221.0" prefWidth="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children></AnchorPane>
                     </content>
                   </TitledPane>
                   <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
@@ -139,7 +120,7 @@
                                           <Font name="System Bold" size="24.0" />
                                        </font>
                                     </Label>
-                                    <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="203.0" text="Name (Ticker)">
+                                    <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="186.0" text="Name (Ticker)">
                                        <font>
                                           <Font size="12.0" />
                                        </font>

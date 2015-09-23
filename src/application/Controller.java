@@ -138,7 +138,7 @@ public class Controller implements Initializable{
 	public HBox fxWatchListPanel;
 	// MenuBar
 	public MenuBar fxMenuBar;
-	
+	public TreeView<String> fxFileTree;
 	
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
@@ -1228,7 +1228,7 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-		new FileHandling(fxMenuBar);
+		new FileHandling(fxMenuBar, fxFileTree);
 	}
 	
 	

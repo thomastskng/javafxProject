@@ -104,7 +104,7 @@
                     <content>
                       <AnchorPane prefHeight="198.0" prefWidth="175.0">
                            <children>
-                              <TreeView prefHeight="221.0" prefWidth="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <TreeView fx:id="fxFileTree" prefHeight="221.0" prefWidth="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children></AnchorPane>
                     </content>
                   </TitledPane>
