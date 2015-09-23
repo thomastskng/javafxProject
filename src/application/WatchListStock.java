@@ -32,8 +32,9 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import java.io.Serializable;
 
-public class WatchListStock {
+public class WatchListStock implements Serializable{
 	private StringProperty stockTicker;
 	private DoubleProperty target;
 	private final ReadOnlyDoubleWrapper currentPrice;

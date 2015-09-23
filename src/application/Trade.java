@@ -38,9 +38,10 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import java.io.Serializable;
 
 
-public class Trade implements Comparable<Trade>{
+public class Trade implements Comparable<Trade>, Serializable{
 	
 	// attributes of each trade that go into the Transaction log
 	//String buySell;

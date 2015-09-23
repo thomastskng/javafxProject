@@ -1,8 +1,12 @@
 package application;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -22,10 +26,12 @@ public class FileHandling {
 	
 	MenuBar fxMenuBar;
 	TreeView<String> fxFileTree;
+	ObservableList<Trade> observableListOfTrades;
 	// Constructor
-	public FileHandling(MenuBar fxMenuBar,TreeView<String> fxFileTree){
+	public FileHandling(MenuBar fxMenuBar,TreeView<String> fxFileTree, ObservableList<Trade> observableListOfTrades){
 		this.fxMenuBar = fxMenuBar;
 		this.fxFileTree = fxFileTree;
+		this.observableListOfTrades = observableListOfTrades;
 		defineFileTree();
 		defineMenuBar();
     }
@@ -92,8 +98,25 @@ public class FileHandling {
 				configureFileChooser("Save As", fileChooser, saveAsLastVisited);
 				File file = fileChooser.showSaveDialog(null);
 				if(file != null){
-					System.out.println(file.getName());
-					saveAsLastVisited = file.getParentFile();
+					try{
+						System.out.println(file.toString());
+						saveAsLastVisited = file.getParentFile();
+				        // create a new file with an ObjectOutputStream
+				         FileOutputStream out = new FileOutputStream(file.toString());
+				         ObjectOutputStream oout = new ObjectOutputStream(out);
+
+				         // write something in the file
+				         for(Trade t : observableListOfTrades){
+				        	 System.out.println("Save As:" + t);
+					         oout.writeObject(t);				        	 
+				         }
+
+				         // close the stream
+				         oout.close();
+						
+					} catch(IOException ex){
+						System.out.println(ex.getMessage());
+					}
 					
 				} else{
 					System.out.println("_________");
