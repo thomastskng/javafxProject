@@ -160,13 +160,11 @@ public class StockLookUp{
 		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
 		double cp = Double.parseDouble(elements.get(0).ownText());
 		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("\\(");
+		String[] title = sn.get(0).ownText().split("-");
 		String stockName = title[0];
 		Elements lotSize = doc.select("td:contains(Lot Size) + td");
 		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
 		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		System.out.println("lot size:" + ls);
 		Elements suspension = doc.select("font:contains(Suspension)");
 		String lastUpdate;
 		if(suspension.text().contains("Suspension")){
@@ -175,6 +173,7 @@ public class StockLookUp{
 			lastUpdate = lastUpdateTime.get(0).ownText();
 
 		}
+		System.out.println("Stock LookUp: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
 		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
 

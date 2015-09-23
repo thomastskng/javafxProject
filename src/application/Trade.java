@@ -307,9 +307,7 @@ public class Trade implements Comparable<Trade>{
 		String stockName = title[0];
 		Elements lotSize = doc.select("td:contains(Lot Size) + td");
 		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		System.out.println("Trade Ticker: " + getStockTicker() + ", cp: " + cp);
 		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		System.out.println("lot size:" + ls);
 		Elements suspension = doc.select("font:contains(Suspension)");
 		String lastUpdate;
 		if(suspension.text().contains("Suspension")){
@@ -318,6 +316,7 @@ public class Trade implements Comparable<Trade>{
 			lastUpdate = lastUpdateTime.get(0).ownText();
 
 		}
+		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
 		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
 	 

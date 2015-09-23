@@ -41,6 +41,12 @@ public class AnimatedTransactionLogTableRow<T> extends TableRow<T> {
                 new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_FLASH, false)));
         flashTimeline.setCycleCount(Animation.INDEFINITE);
         
+        setOnMouseClicked(event -> {
+        	if(isEmpty()){
+          	  getTableView().getSelectionModel().clearSelection();
+        	}
+        });
+        
     }
 
     

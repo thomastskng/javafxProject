@@ -106,6 +106,8 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
                 System.out.println(((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).getItems().size());
                 System.out.println(filterListOfTrades.size());
                 System.out.println(observableListOfTrades.size());
+          } else if(isEmpty()){
+        	  getTableView().getSelectionModel().clearSelection();
           }
         });
     }

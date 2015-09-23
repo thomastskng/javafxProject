@@ -17,6 +17,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.time.LocalDate;
+import java.io.File;
 import java.io.IOException;
 import java.lang.*;
 import javafx.scene.control.cell.*;
@@ -135,6 +136,9 @@ public class Controller implements Initializable{
     public VBox fxStockCalculator;
     // Horizontal Box - Watch List panel for adding new stocks
 	public HBox fxWatchListPanel;
+	// MenuBar
+	public MenuBar fxMenuBar;
+	
 	
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
@@ -1224,7 +1228,7 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-		
+		new FileHandling(fxMenuBar);
 	}
 	
 	

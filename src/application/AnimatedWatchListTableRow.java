@@ -52,6 +52,12 @@ public class AnimatedWatchListTableRow<T> extends TableRow<T> {
         		new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_LastGreaterThanEqualToTarget_HL, true)),
                 new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_LastGreaterThanEqualToTarget_FLASH, false)));
         alertLastGreaterThanEqualToTargetFlashTimeline.setCycleCount(Animation.INDEFINITE);
+    
+        setOnMouseClicked(event -> {
+        	if(isEmpty()){
+          	  getTableView().getSelectionModel().clearSelection();
+        	}
+        });
     }
     
     private void alertChanged(boolean fNew) {
