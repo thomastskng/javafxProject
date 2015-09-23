@@ -55,8 +55,8 @@ public class StockLookUp{
 	};
 	
 	
-	public StockLookUp(int stockTicker){
-		this.stockTicker = new SimpleStringProperty(String.format("%04d",stockTicker));
+	public StockLookUp(String stockTicker){
+		this.stockTicker = new SimpleStringProperty(stockTicker);
 	
 		// multi-threading current price	
 		stockService.setPeriod(Duration.seconds(10));
@@ -107,9 +107,7 @@ public class StockLookUp{
 	}
 	
 	public void setStockTicker(String stockTicker){
-		stockTickerProperty().set("-1");
-		int st = Integer.parseInt(stockTicker);
-		stockTickerProperty().set(String.format("%04d",st));
+		stockTickerProperty().set(stockTicker);
 	}
 	
 	public ReadOnlyDoubleProperty currentPriceProperty(){

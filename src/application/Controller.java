@@ -107,7 +107,6 @@ public class Controller implements Initializable{
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioStockName;
 
 	// WatchList
-	
 	public TableView<WatchListStock> fxWatchList;
 	public TableColumn<WatchListStock,String> fxWatchListTicker;
 	public TableColumn<WatchListStock,Number> fxWatchListCurrentPrice;
@@ -306,7 +305,7 @@ public class Controller implements Initializable{
 		
 		// define setCellFactory
 		filterTableTransactionDate.setCellFactory(col -> new DateEditingCell());
-		filterTableStockTicker.setCellFactory(stockTickerCellFactory);
+		filterTableStockTicker.setCellFactory(col -> new EditingStockTickerCell<Trade>(""));
 		filterTablePrice.setCellFactory(col -> new EditingNumberCell<Trade>("price-cell"));
 		filterTableVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		filterTableTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
@@ -345,7 +344,7 @@ public class Controller implements Initializable{
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
 		observableListOfTrades.addAll(
-				new Trade(BuySell.Buy, LocalDate.now().plusDays(3),1,50,5)
+				new Trade(BuySell.Buy, LocalDate.now().plusDays(3),"1",50,5)
 				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
@@ -408,7 +407,7 @@ public class Controller implements Initializable{
 		
 		// define setCellFactory
 		fxTransactionLogTransactionDate.setCellFactory(col -> new DateEditingCell());
-		fxTransactionLogStockTicker.setCellFactory(stockTickerCellFactory);
+		fxTransactionLogStockTicker.setCellFactory(col -> new EditingStockTickerCell<Trade>(""));
 	    fxTransactionLogPrice.setCellFactory(col -> new EditingNumberCell<Trade>("price-cell"));
 	    fxTransactionLogVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		fxTransactionLogTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
@@ -422,6 +421,8 @@ public class Controller implements Initializable{
 					@Override
 					public void handle(CellEditEvent<Trade, String> t) {
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setBuySell(t.getNewValue());
+		                filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(""));
+
 					}
 				});
 		
@@ -433,7 +434,7 @@ public class Controller implements Initializable{
 		//fxTransactionLogStockTicker.setCellValueFactory(new PropertyValueFactory<Trade,String>("stockTicker"));
 		//fxTransactionLogStockTicker.setCellFactory(TextFieldTableCell.forTableColumn());		
 
-		
+		/*
 		fxTransactionLogStockTicker.setOnEditCommit(
 				new EventHandler<CellEditEvent<Trade, String>>() {
 					@Override
@@ -441,7 +442,7 @@ public class Controller implements Initializable{
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setStockTicker(t.getNewValue());
 					}
 				});
-		
+		*/
 		
 		// initialise price
 		/*
@@ -637,7 +638,8 @@ public class Controller implements Initializable{
 		fxPortfolioPnL.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>("pnl-cell"));
 		fxPortfolioPnLHistory.setCellFactory(TextFieldTableCell.forTableColumn());
 		//fxPortfolioPosition.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-
+		fxPortfolioTicker.setCellFactory(col -> new NonEditableStockTickerCell<ConsolidatedTrade>());
+		
 		/*****************************************************
 		 *	Table row highlighting for newly added trade
 		 *****************************************************/
@@ -715,7 +717,7 @@ public class Controller implements Initializable{
 	// initialise fxWatchList 
 	public void initializeFxWatchList(){	
 		observableListOfWatchListStocks.addAll(
-				new WatchListStock("Last >= Target",1,23.0)
+				new WatchListStock("Last >= Target","1",23.0)
 		);
 		
 		fxWatchList.setItems(observableListOfWatchListStocks);
@@ -928,7 +930,7 @@ public class Controller implements Initializable{
 				fxLabel5.textProperty().unbind();
 
 		        Locale locale  = new Locale("en", "UK");
-            	lookUpTicker = new StockLookUp(Integer.parseInt(tfStockTicker.getText()));
+            	lookUpTicker = new StockLookUp(tfStockTicker.getText());
             	fxLabel1.textProperty().bind(lookUpTicker.stockNameProperty());
 				fxLabel2.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));		
 				fxLabel5.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
@@ -1035,7 +1037,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade(BuySell.Buy, datepicker.getValue(), stockTicker, volume, price);
+					Trade newTrade = new Trade(BuySell.Buy, datepicker.getValue(), tfStockTicker.getText(), volume, price);
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1065,7 +1067,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade(BuySell.Sell, datepicker.getValue(), stockTicker, volume, price);
+					Trade newTrade = new Trade(BuySell.Sell, datepicker.getValue(), tfStockTicker.getText(), volume, price);
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1082,7 +1084,7 @@ public class Controller implements Initializable{
 			} else{
 				int stockTicker = Integer.parseInt(tfStockTicker.getText());
 				double price = Double.parseDouble(tfPrice.getText());
-				WatchListStock newWLStock = new WatchListStock("Last <= Target", stockTicker,price);
+				WatchListStock newWLStock = new WatchListStock("Last <= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
 				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
 
@@ -1095,7 +1097,7 @@ public class Controller implements Initializable{
 			} else{
 				int stockTicker = Integer.parseInt(tfStockTicker.getText());
 				double price = Double.parseDouble(tfPrice.getText());				
-				WatchListStock newWLStock = new WatchListStock("Last >= Target", stockTicker,price);
+				WatchListStock newWLStock = new WatchListStock("Last >= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
 				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
 			}

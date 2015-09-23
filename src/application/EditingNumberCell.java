@@ -84,7 +84,7 @@ public class EditingNumberCell<T> extends TableCell<T,Number>{
     private TextFormatter<Number> textFormatter ;
 
     private Pattern partialInputPattern = Pattern.compile(
-            "[-+]?[,0-9]*(\\.[0-9]*)?");
+            "[-]?[,0-9]*(\\.[0-9]*)?");
 
     private DecimalFormat df ;
 

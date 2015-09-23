@@ -92,7 +92,9 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
         		new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_STOPLOSS_HL, true)),
                 new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_STOPLOSS_FLASH, false)));
         stopLossFlashTimeline.setCycleCount(Animation.INDEFINITE);
-        
+  	  
+        this.setStyle("-fx-selection-bar:gold");
+
         setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && (!isEmpty()) ) {
                 final StringExpression tickerBE = tickerExtractor.apply(getItem());
@@ -106,6 +108,7 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
                 System.out.println(((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).getItems().size());
                 System.out.println(filterListOfTrades.size());
                 System.out.println(observableListOfTrades.size());
+                
           } else if(isEmpty()){
         	  getTableView().getSelectionModel().clearSelection();
           }

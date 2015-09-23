@@ -81,7 +81,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	
 	
 	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss){
-		this.stockTicker 	= new SimpleStringProperty(String.format("%04d",Integer.parseInt(stockTicker)));
+		this.stockTicker 	= new SimpleStringProperty(stockTicker);
 		this.avgPrice 		= new SimpleDoubleProperty(avgPrice);
 		this.volumeHeld 	= new SimpleDoubleProperty(volumeHeld);
 		this.volumeSold 	= new SimpleDoubleProperty(volumeSold);
@@ -158,9 +158,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	}
 	
 	public void setStockTicker(String stockTicker){
-		stockTickerProperty().set("-1");
-		int st = Integer.parseInt(stockTicker);
-		stockTickerProperty().set(String.format("%04d",st));
+		stockTickerProperty().set(stockTicker);
 	}
 	
 	// avg Price
@@ -434,11 +432,11 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		}
 		return getStockTicker().equals(o.getStockTicker()) && getAvgPrice() == o.getAvgPrice() && getVolumeHeld() == o.getVolumeHeld() && getVolumeSold() == o.getVolumeSold() && getPnl() == o.getPnl(); 
 	}
-	
+	/*
 	public static void main(String[] args) throws InterruptedException, IOException{
 		ConsolidatedTrade ct = new ConsolidatedTrade("0001", 2,2,2,"Open", new ArrayList<Double>(),2,2);
 		System.out.println(ct.getCurrentPriceFromGoogle());
 		System.out.println(ct.getCurrentPriceFromAAStock());
-
 	}
+	*/
 }

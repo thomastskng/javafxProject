@@ -12,6 +12,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
@@ -19,6 +21,8 @@ import javafx.scene.control.TableCell;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.binding.NumberBinding;
+import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.control.TableCell;
@@ -62,9 +66,9 @@ public class Trade implements Comparable<Trade>{
     private final ReadOnlyStringWrapper stockName;
 	private final ReadOnlyStringWrapper lastUpdate;
 	private final ReadOnlyDoubleWrapper  lotSize;
-
-	private ReadOnlyBooleanWrapper caution;
+	private final PauseTransition delay;
 	
+	private ReadOnlyBooleanWrapper caution;
 	
 	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -81,11 +85,11 @@ public class Trade implements Comparable<Trade>{
 	
 	
 	
-	public Trade(BuySell buySell, LocalDate transactionDate, int stockTicker, double volume, double price){
+	public Trade(BuySell buySell, LocalDate transactionDate, String stockTicker, double volume, double price){
 		this.buySell = new SimpleStringProperty(buySell.toString());
 		this.remarks = new SimpleStringProperty("");
 		this.transactionDate = new SimpleObjectProperty<LocalDate>(transactionDate);
-		this.stockTicker = new SimpleStringProperty(String.format("%04d",stockTicker));
+		this.stockTicker = new SimpleStringProperty(stockTicker);
 		this.volume = new SimpleDoubleProperty(volume);
 		this.price = new SimpleDoubleProperty(price);
 		this.transactionFee = new ReadOnlyDoubleWrapper();
@@ -134,11 +138,19 @@ public class Trade implements Comparable<Trade>{
 			}
 		}, stockService.lastValueProperty()));
 
-
+		
 		this.caution = new ReadOnlyBooleanWrapper();
 		this.caution.bind(currentPriceProperty().greaterThan(priceProperty()));
-		startMonitoring();
+		delay = new PauseTransition(Duration.seconds(30));
+		delay.setOnFinished(e -> stopMonitoring());
+		tempMonitoring();
 		
+		stockTickerProperty().addListener(new ChangeListener(){
+			@Override
+			public void changed(ObservableValue o, Object oldVal, Object newVal){
+				tempMonitoring();
+			}
+		});
 	}	
 	
 	public Calendar getCreationTime(){
@@ -185,9 +197,9 @@ public class Trade implements Comparable<Trade>{
 	}
 	
 	public void setStockTicker(String stockTicker){
-		stockTickerProperty().set("-1");
-		int st = Integer.parseInt(stockTicker);
-		stockTickerProperty().set(String.format("%04d",st));
+		//stockTickerProperty().set("-1");
+		//int st = Integer.parseInt(stockTicker);
+		stockTickerProperty().set(stockTicker);
 	}
 	
 	public double getVolume(){
@@ -280,11 +292,22 @@ public class Trade implements Comparable<Trade>{
 	 
 	 // multi-threading
 	public final void startMonitoring() {
+		System.out.println("!!!!!!!!!!!!!!!!!!!!   RESTARTING     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		stockService.restart();
 	}
 
 	public final void stopMonitoring() {
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! STOP");
 		stockService.cancel();
+	}
+	
+	// temporary monitoring
+	public final void tempMonitoring(){
+		System.out.println("TEMP MON !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+		startMonitoring();
+		delay.play();
+		//delay.stop();
 	}
 	
 	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
@@ -376,6 +399,7 @@ public class Trade implements Comparable<Trade>{
 	
 	
 	// Calendar.getInstance().getTime()
+	/*
 	public static void main(String[] args) throws InterruptedException, IOException{
 		// Comparison test
 		Trade trade1 = new Trade(BuySell.Buy, LocalDate.now(),50,1,1);
@@ -411,7 +435,7 @@ public class Trade implements Comparable<Trade>{
 		//trade1.setPrice(1);
 		//System.out.println(trade1);
 	}
-
+	 */
 
 	
 }

@@ -54,10 +54,10 @@ public class WatchListStock {
 		}
 	};
 
-	public WatchListStock(String condition, int stockTicker, double target){
+	public WatchListStock(String condition, String stockTicker, double target){
 
 		this.condition = new SimpleStringProperty(condition);
-		this.stockTicker = new SimpleStringProperty(String.format("%04d",stockTicker));
+		this.stockTicker = new SimpleStringProperty(stockTicker);
 		this.target = new SimpleDoubleProperty(target);
 		stockService.setPeriod(Duration.seconds(10));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
@@ -130,9 +130,7 @@ public class WatchListStock {
 	}
 	
 	public void setStockTicker(String stockTicker){
-		stockTickerProperty().set("-1");
-		int st = Integer.parseInt(stockTicker);
-		stockTickerProperty().set(String.format("%04d",st));
+		stockTickerProperty().set(stockTicker);
 	}
 
 	public double getTarget(){

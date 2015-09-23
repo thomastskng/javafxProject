@@ -9,15 +9,26 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import java.text.NumberFormat;
+import java.text.ParseException;
+
 import javafx.scene.control.TextFormatter;
+import javafx.util.StringConverter;
+
 import java.text.ParsePosition;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class EditingStockTickerCell<T> extends TableCell<T,String>{
 	private TextField textField;
-	 
+    private TextFormatter<String> textFormatter ;
+    private Pattern partialInputPattern = Pattern.compile("[0-9]*(\\.[0-9]*)?");
+    private NumberFormat nf ;
+    
     public EditingStockTickerCell(String...styleClasses) {
+        //Locale locale  = new Locale("en", "UK");
+        //nf = NumberFormat.getIntegerInstance(locale);
+
         getStyleClass().addAll(styleClasses);
     }
 
@@ -36,7 +47,8 @@ public class EditingStockTickerCell<T> extends TableCell<T,String>{
     @Override
     public void cancelEdit() {
         super.cancelEdit();
-        setText((String) getItem());
+        //setText((String) getItem());
+        setText(String.format("%04d", nf.format(getItem())));
         setGraphic(null);
     }
 
@@ -64,13 +76,14 @@ public class EditingStockTickerCell<T> extends TableCell<T,String>{
     }
     
     private String getString() {
-        return getItem() == null ? "" : getItem().toString();
+        return getItem() == null ? "" : String.format("%04d",Integer.parseInt(getItem()));
     }
     
     private void createTextField(){
     	    	
-        NumberFormat nf = NumberFormat.getIntegerInstance();        
+        nf = NumberFormat.getIntegerInstance();        
         textField = new TextField();
+
 
         // add filter to allow for typing only integer
         textField.setTextFormatter( new TextFormatter<>( c ->
@@ -81,7 +94,7 @@ public class EditingStockTickerCell<T> extends TableCell<T,String>{
             ParsePosition parsePosition = new ParsePosition( 0 );
             Object object = nf.parse( c.getControlNewText(), parsePosition );
 
-            if ( object == null || parsePosition.getIndex() < c.getControlNewText().length() )
+            if ( object == null || parsePosition.getIndex() < c.getControlNewText().length() || c.getControlNewText().length() > 4 )
             {
                 return null;
             }
@@ -95,6 +108,14 @@ public class EditingStockTickerCell<T> extends TableCell<T,String>{
 
         textField.setMinWidth( this.getWidth() - this.getGraphicTextGap() * 2 );
 
+        /*
+        // commit on Enter
+        textFormatter.valueProperty().addListener((obs, oldValue, newValue) -> {
+            commitEdit(newValue);
+        });
+        */
+        
+        
         // commit on Enter
         textField.setOnAction( new EventHandler<ActionEvent>()
         {
