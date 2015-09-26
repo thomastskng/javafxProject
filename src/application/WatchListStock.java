@@ -34,7 +34,7 @@ import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import java.io.Serializable;
 
-public class WatchListStock implements Serializable{
+public class WatchListStock implements Serializable, StockScraping{
 	private StringProperty stockTicker;
 	private DoubleProperty target;
 	private final ReadOnlyDoubleWrapper currentPrice;
@@ -47,9 +47,8 @@ public class WatchListStock implements Serializable{
 		public Task<StockScrapedInfo> createTask(){
 			return new Task<StockScrapedInfo>() {
 				@Override
-				public StockScrapedInfo call() throws InterruptedException, IOException {					
-					return getCurrentPriceFromAAStock();
-					//return getCurrentPriceFromGoogle();
+				public StockScrapedInfo call() throws Exception {					
+					return getDataFromAAStock(getStockTicker());
 				}
 			};
 		}
@@ -60,7 +59,7 @@ public class WatchListStock implements Serializable{
 		this.condition = new SimpleStringProperty(condition);
 		this.stockTicker = new SimpleStringProperty(stockTicker);
 		this.target = new SimpleDoubleProperty(target);
-		stockService.setPeriod(Duration.seconds(10));
+		stockService.setPeriod(Duration.seconds(120));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
@@ -178,28 +177,11 @@ public class WatchListStock implements Serializable{
 	public final void stopMonitoring() {
 		stockService.cancel();
 	}
-	 
-	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
-		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
-		Document doc = Jsoup.connect(url).get();
-		//System.out.println(doc);
-		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		double cp = Double.parseDouble(elements.get(0).ownText());
-		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("\\(");
-		String stockName = title[0];
-		Elements lotSize = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		Elements suspension = doc.select("font:contains(Suspension)");
-		String lastUpdate;
-		if(suspension.text().contains("Suspension")){
-			lastUpdate = "Suspension";
-		} else{
-			lastUpdate = lastUpdateTime.get(0).ownText();
-
-		}
-		System.out.println("WatchList Stock: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
+	
+	public String toString(){
+		return 	"Stock Ticker: " + getStockTicker() +  
+				", Target price: " + getTarget() + 
+				", alert: " + getAlert() + 
+				", condition: " + getCondition();
 	}
 }

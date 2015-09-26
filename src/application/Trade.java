@@ -4,6 +4,15 @@ import java.math.*;
 import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
+
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlDivision;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+
 import java.io.*;
 import javafx.util.Duration;
 import java.time.LocalDate;
@@ -39,9 +48,9 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import java.io.Serializable;
+import java.net.URLEncoder;
 
-
-public class Trade implements Comparable<Trade>, Serializable{
+public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
 	// attributes of each trade that go into the Transaction log
 	//String buySell;
@@ -76,9 +85,8 @@ public class Trade implements Comparable<Trade>, Serializable{
 	    public Task<StockScrapedInfo> createTask(){
 			return new Task<StockScrapedInfo>() {
 				@Override
-				public StockScrapedInfo call() throws InterruptedException, IOException {					
-					return getCurrentPriceFromAAStock();
-					//return getCurrentPriceFromGoogle();
+				public StockScrapedInfo call() throws Exception {		
+					return getDataFromAAStock(getStockTicker());
 				}
 			};
 		}
@@ -103,7 +111,7 @@ public class Trade implements Comparable<Trade>, Serializable{
 		creationTime = Calendar.getInstance();
 		// multi-threading current price
 		
-		stockService.setPeriod(Duration.seconds(10));
+		stockService.setPeriod(Duration.seconds(120));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
@@ -311,38 +319,7 @@ public class Trade implements Comparable<Trade>, Serializable{
 		//delay.stop();
 	}
 	
-	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
-		String url = "https://www.google.com.hk/finance?q=" + getStockTicker() + "&ei=yF14VYC4F4Wd0ASb64CoCw";
-		Document doc = Jsoup.connect(url).get();
-		Element content = doc.select("meta[itemprop=price]").first();
-		double cp =  Double.parseDouble(content.attr("content"));
-		return cp;
-		}
-	 
-	 
-	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
-		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
-		Document doc = Jsoup.connect(url).get();
-		//System.out.println(doc);
-		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		double cp = Double.parseDouble(elements.get(0).ownText());
-		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("\\(");
-		String stockName = title[0];
-		Elements lotSize = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		Elements suspension = doc.select("font:contains(Suspension)");
-		String lastUpdate;
-		if(suspension.text().contains("Suspension")){
-			lastUpdate = "Suspension";
-		} else{
-			lastUpdate = lastUpdateTime.get(0).ownText();
 
-		}
-		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
-	}
 	 
 	
 	public String toString(){

@@ -34,7 +34,7 @@ import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 
 
-public class StockLookUp{
+public class StockLookUp implements StockScraping{
 	
 	private StringProperty stockTicker;
 	private final ReadOnlyDoubleWrapper currentPrice;
@@ -46,8 +46,8 @@ public class StockLookUp{
 	    public Task<StockScrapedInfo> createTask(){
 			return new Task<StockScrapedInfo>() {
 				@Override
-				public StockScrapedInfo call() throws InterruptedException, IOException {					
-					return getCurrentPriceFromAAStock();
+				public StockScrapedInfo call() throws Exception {					
+					return getDataFromAAStock(getStockTicker());
 					//return getCurrentPriceFromGoogle();
 				}
 			};
@@ -59,7 +59,7 @@ public class StockLookUp{
 		this.stockTicker = new SimpleStringProperty(stockTicker);
 	
 		// multi-threading current price	
-		stockService.setPeriod(Duration.seconds(10));
+		stockService.setPeriod(Duration.seconds(120));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
@@ -133,7 +133,7 @@ public class StockLookUp{
 	public final double getLotSize(){
 		return lotSizeProperty().get();
 	}
-	 
+	
 	public ReadOnlyStringProperty lastUpdateProperty(){
 		return this.lastUpdate.getReadOnlyProperty();
 	}
@@ -149,30 +149,6 @@ public class StockLookUp{
 
 	public final void stopMonitoring() {
 		stockService.cancel();
-	}
-	
-	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
-		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
-		Document doc = Jsoup.connect(url).get();
-		//System.out.println(doc);
-		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		double cp = Double.parseDouble(elements.get(0).ownText());
-		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("-");
-		String stockName = title[0];
-		Elements lotSize = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		Elements suspension = doc.select("font:contains(Suspension)");
-		String lastUpdate;
-		if(suspension.text().contains("Suspension")){
-			lastUpdate = "Suspension";
-		} else{
-			lastUpdate = lastUpdateTime.get(0).ownText();
-
-		}
-		System.out.println("Stock LookUp: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
 	}
 
 }

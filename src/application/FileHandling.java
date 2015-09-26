@@ -1,9 +1,12 @@
 package application;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.collections.ObservableList;
@@ -27,11 +30,13 @@ public class FileHandling {
 	MenuBar fxMenuBar;
 	TreeView<String> fxFileTree;
 	ObservableList<Trade> observableListOfTrades;
+	 ObservableList<WatchListStock> observableListOfWatchListStocks;
 	// Constructor
-	public FileHandling(MenuBar fxMenuBar,TreeView<String> fxFileTree, ObservableList<Trade> observableListOfTrades){
+	public FileHandling(MenuBar fxMenuBar,TreeView<String> fxFileTree, ObservableList<Trade> observableListOfTrades, ObservableList<WatchListStock> observableListOfWatchListStocks){
 		this.fxMenuBar = fxMenuBar;
 		this.fxFileTree = fxFileTree;
 		this.observableListOfTrades = observableListOfTrades;
+		this.observableListOfWatchListStocks = observableListOfWatchListStocks;
 		defineFileTree();
 		defineMenuBar();
     }
@@ -68,7 +73,19 @@ public class FileHandling {
 						if(fi != null){
 							System.out.println(fi.getParent());
 							openLastVisited = fi.getParentFile();
-							populateTree(fi.getName(),fi.getParent() );
+							populateTree(fi.getName(),fi.getParent() );							
+							try {
+								ObjectInputStream objIn = new ObjectInputStream(new FileInputStream(fi));
+								System.out.println("Deserialized data: " + objIn.readObject().toString());
+								ArrayList<Trade> next = (ArrayList<Trade>) objIn.readObject();
+								for(Trade t: next){
+									System.out.println("reading in Trade: " + t);
+								}
+							} catch (ClassNotFoundException | IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							
 						}					
 					}
 				}
@@ -102,17 +119,22 @@ public class FileHandling {
 						System.out.println(file.toString());
 						saveAsLastVisited = file.getParentFile();
 				        // create a new file with an ObjectOutputStream
-				         FileOutputStream out = new FileOutputStream(file.toString());
-				         ObjectOutputStream oout = new ObjectOutputStream(out);
+				         FileOutputStream fileOut = new FileOutputStream(file.toString());
+				         ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
 
 				         // write something in the file
-				         for(Trade t : observableListOfTrades){
-				        	 System.out.println("Save As:" + t);
-					         oout.writeObject(t);				        	 
-				         }
-
+				         ArrayList<Trade> tradeArrList = new ArrayList<Trade>();
+				         tradeArrList.addAll(observableListOfTrades);
+				         System.out.println("DIU LA SING: " + tradeArrList.size());
+				         ArrayList<WatchListStock> wlStockArrList = new ArrayList<WatchListStock>();
+				         wlStockArrList.addAll(observableListOfWatchListStocks);
+				         
+				         objOut.writeObject(tradeArrList);				        	     
+			        	 //objOut.writeObject(wlStockArrList);
+			
 				         // close the stream
-				         oout.close();
+				         objOut.close();
+				         fileOut.close();
 						
 					} catch(IOException ex){
 						System.out.println(ex.getMessage());
@@ -140,7 +162,7 @@ public class FileHandling {
     	fileChooser.setInitialDirectory(file);
     	fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All files", "*.*"),
-                new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"),
+               // new FileChooser.ExtensionFilter("CSV (*.csv)", "*.csv"),
                 new FileChooser.ExtensionFilter("TXT (*.txt)", "*.txt")
     	);
 	}

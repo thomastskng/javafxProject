@@ -33,7 +33,7 @@ import javafx.concurrent.Task;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
+public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockScraping{
 
 	// non-user-defined instance variables
 	private StringProperty stockTicker;
@@ -65,14 +65,13 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	
 	
 	// Concurrent task to get price
-	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
+	private ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
 	    public Task<StockScrapedInfo> createTask(){
 			return new Task<StockScrapedInfo>() {
 				@Override
-				public StockScrapedInfo call() throws InterruptedException, IOException {
-					return getCurrentPriceFromAAStock();
-					//return getCurrentPriceFromGoogle();
+				public StockScrapedInfo call() throws Exception {
+					return getDataFromAAStock(getStockTicker());
 				}
 			};
 		}
@@ -92,7 +91,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
 		// multi-threading
-		stockService.setPeriod(Duration.seconds(10));
+		stockService.setPeriod(Duration.seconds(120));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
 		this.currentPrice 	= new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
@@ -345,40 +344,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>{
 	public final void stopMonitoring() {
 		stockService.cancel();
 	}
-	
-	public double getCurrentPriceFromGoogle() throws InterruptedException, IOException{
-		String url = "https://www.google.com.hk/finance?q=" + getStockTicker() + "&ei=yF14VYC4F4Wd0ASb64CoCw";
-		Document doc = Jsoup.connect(url).get();
-		Element content = doc.select("meta[itemprop=price]").first();
-		double cp =  Double.parseDouble(content.attr("content"));
-		return cp;
-		}
-	 
-	 
-	public StockScrapedInfo getCurrentPriceFromAAStock() throws InterruptedException, IOException{
-		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + getStockTicker();
-		Document doc = Jsoup.connect(url).get();
-		//System.out.println(doc);
-		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		double cp = Double.parseDouble(elements.get(0).ownText());
-		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("\\(");
-		String stockName = title[0];
-		Elements lotSize = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(lotSize.get(0).ownText());
-		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		Elements suspension = doc.select("font:contains(Suspension)");
-		String lastUpdate;
-		if(suspension.text().contains("Suspension")){
-			lastUpdate = "Suspension";
-		} else{
-			lastUpdate = lastUpdateTime.get(0).ownText();
 
-		}
-		System.out.println("Consolidated Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
-	}
-	
 	public String toString(){
 		return getStockTicker() + ": " + 
 				", avg Price: " + getAvgPrice() + 
