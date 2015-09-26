@@ -50,6 +50,7 @@ import javafx.concurrent.Task;
 import java.io.Serializable;
 import java.net.URLEncoder;
 
+// testing branch
 public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
 	// attributes of each trade that go into the Transaction log
