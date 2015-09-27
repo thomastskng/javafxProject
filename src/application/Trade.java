@@ -16,6 +16,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import java.io.*;
 import javafx.util.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -47,6 +49,9 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+
 import java.io.Serializable;
 import java.net.URLEncoder;
 
@@ -110,10 +115,20 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		// Object creation time
 		creationTime = Calendar.getInstance();
 		// multi-threading current price
-		
-		stockService.setPeriod(Duration.seconds(120));
+		Random rn = new Random();
+		int sec = (30 + rn.nextInt((180-30)+1));
+    	System.out.println("T random time !!!!!!!!!!!!!!!!!       " + sec + "   "  + LocalDateTime.now());
+		stockService.setPeriod(Duration.seconds(sec));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
-		
+		stockService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+		     @Override
+		     public void handle(WorkerStateEvent t) {
+		 		Random rn = new Random();
+				int sec = (30 + rn.nextInt((180-30)+1));
+		    	System.out.println("T setOnSucceeded!!!!!!!!!!!!!!!!!       " + sec + "   "  + LocalDateTime.now());
+				stockService.setPeriod(Duration.seconds(sec));
+		     }
+		});
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
 		this.lotSize = new ReadOnlyDoubleWrapper(0);
