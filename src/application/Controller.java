@@ -12,6 +12,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.application.Application;
 import java.net.URL;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -137,12 +138,15 @@ public class Controller implements Initializable{
 	public HBox fxWatchListPanel;
 	// MenuBar
 	public MenuBar fxMenuBar;
-	public TreeView<String> fxFileTree;
+	public TreeView<Path> fxFileTree;
 	
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
 	private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 	
+	// HashMap for storing and keep track of stock ticker and target / stop loss relationship
+	HashMap<String,Double> ctTickerTargetMap = new HashMap<String,Double>();
+	HashMap<String,Double> ctTickerStopLossMap = new HashMap<String,Double>();
 	
     /**
      * The data as an observable list of Trade.
@@ -346,7 +350,7 @@ public class Controller implements Initializable{
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
 		observableListOfTrades.addAll(
-				new Trade(BuySell.Buy, LocalDate.now().plusDays(3),"1",50,5)
+				new Trade("Buy", LocalDate.now().plusDays(3),"1",50,5)
 				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
@@ -365,6 +369,7 @@ public class Controller implements Initializable{
 				for(Trade ttt : observableListOfTrades){
 					System.out.println( "Change: " + ttt);
 				}
+				
 				SortedList<Trade> sortedTrades = new SortedList<Trade>(observableListOfTrades);
 				sortedTrades.setComparator(new Comparator<Trade>(){
 					@Override
@@ -604,6 +609,15 @@ public class Controller implements Initializable{
 	// initialise Portfolio
 	public void initializeFXPortfolio(){
 		refreshPortfolio();
+		// Add listener to observable list to listen to ALL changes
+		observableListOfConsolidatedTrades.addListener(new ListChangeListener<ConsolidatedTrade>() {
+		    @Override
+		    public void onChanged(ListChangeListener.Change change) {
+				ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
+				ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
+	
+		    }
+		});
 		/*
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
 		sortedTrades.setComparator(new Comparator<ConsolidatedTrade>(){
@@ -694,7 +708,9 @@ public class Controller implements Initializable{
 		}
 		
 		// Create a new portfolio whenever there is any change, which will also start monitoring currentPriceProperty().
-        initialPortfolio = new Portfolio(observableListOfTrades, observableListOfConsolidatedTrades);
+        initialPortfolio = new Portfolio(observableListOfTrades, observableListOfConsolidatedTrades
+        		,ctTickerTargetMap, ctTickerStopLossMap
+        		);
         fxPortfolio.setEditable(true);
 		
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
@@ -705,6 +721,18 @@ public class Controller implements Initializable{
 			}
 		});
 		
+		ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
+		ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
+		
+		for (Map.Entry<String, Double> entry : ctTickerTargetMap.entrySet())
+		{
+		    System.out.println("Target HashMap: " + entry.getKey() + "/" + entry.getValue());
+		}
+		for (Map.Entry<String, Double> entry : ctTickerStopLossMap.entrySet())
+		{
+		    System.out.println("StopLoss HashMap: " + entry.getKey() + "/" + entry.getValue());
+		}
+		
 		System.out.println("***************");
 		//initialPortfolio.displayDataStructure();
 
@@ -713,7 +741,7 @@ public class Controller implements Initializable{
 		for(Trade ttt : fxTransactionLog.getItems()){
 		//for(Trade ttt : observableListOfTrades){
 			System.out.println( "Change: " + ttt);
-		}		
+		}
 	}
 
 	// initialise fxWatchList 
@@ -1008,7 +1036,6 @@ public class Controller implements Initializable{
 		
 
 		Button buyButton = new Button("Buy");
-		buyButton.setTooltip(new Tooltip("Hover over me!!!!!"));
 		Button sellButton = new Button("Sell");
 		Button cancelButton = new Button("Cancel");
 		Button deleteTradeButton = new Button("Delete Trade");
@@ -1039,7 +1066,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade(BuySell.Buy, datepicker.getValue(), tfStockTicker.getText(), volume, price);
+					Trade newTrade = new Trade("Buy", datepicker.getValue(), tfStockTicker.getText(), volume, price);
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1069,7 +1096,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade(BuySell.Sell, datepicker.getValue(), tfStockTicker.getText(), volume, price);
+					Trade newTrade = new Trade("Sell", datepicker.getValue(), tfStockTicker.getText(), volume, price);
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1232,7 +1259,7 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-		new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks);
+		new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap);
 	}
 	
 	

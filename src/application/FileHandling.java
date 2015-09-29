@@ -1,13 +1,17 @@
 package application;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,6 +20,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.DirectoryChooser;
@@ -28,15 +33,19 @@ public class FileHandling {
 	static int newPortfolio = 0;
 	
 	MenuBar fxMenuBar;
-	TreeView<String> fxFileTree;
+	TreeView<Path> fxFileTree;
 	ObservableList<Trade> observableListOfTrades;
-	 ObservableList<WatchListStock> observableListOfWatchListStocks;
+	ObservableList<WatchListStock> observableListOfWatchListStocks;
+	HashMap<String, Double> ctTickerTargetMap;
+	HashMap<String, Double> ctTickerStopLossMap;
 	// Constructor
-	public FileHandling(MenuBar fxMenuBar,TreeView<String> fxFileTree, ObservableList<Trade> observableListOfTrades, ObservableList<WatchListStock> observableListOfWatchListStocks){
+	public FileHandling(MenuBar fxMenuBar,TreeView<Path> fxFileTree, ObservableList<Trade> observableListOfTrades, ObservableList<WatchListStock> observableListOfWatchListStocks, HashMap<String, Double> ctTickerTargetMap, HashMap<String, Double> ctTickerStopLossMap){
 		this.fxMenuBar = fxMenuBar;
 		this.fxFileTree = fxFileTree;
 		this.observableListOfTrades = observableListOfTrades;
 		this.observableListOfWatchListStocks = observableListOfWatchListStocks;
+		this.ctTickerTargetMap = ctTickerTargetMap;
+		this.ctTickerStopLossMap = ctTickerStopLossMap;
 		defineFileTree();
 		defineMenuBar();
     }
@@ -76,10 +85,20 @@ public class FileHandling {
 							populateTree(fi.getName(),fi.getParent() );							
 							try {
 								ObjectInputStream objIn = new ObjectInputStream(new FileInputStream(fi));
-								System.out.println("Deserialized data: " + objIn.readObject().toString());
-								ArrayList<Trade> next = (ArrayList<Trade>) objIn.readObject();
-								for(Trade t: next){
+								System.out.println("Deserialized data: ");
+								ArrayList<Trade> tradeArrListIn = (ArrayList<Trade>) objIn.readObject();
+								Map<String,Double> ctTickerTargetMapIn = (Map<String, Double>) objIn.readObject();
+								Map<String,Double> ctTickerStopLossMapIn = (Map<String, Double>) objIn.readObject();
+								ArrayList<WatchListStock> wlStockArrListIn = (ArrayList<WatchListStock>) objIn.readObject();								
+								objIn.close();
+								for(Trade t: tradeArrListIn){
 									System.out.println("reading in Trade: " + t);
+								}
+								System.out.println("reading in Target HashMap: " + ctTickerTargetMapIn);
+								System.out.println("reading in StopLoss HashMap: " + ctTickerStopLossMapIn);
+
+								for(WatchListStock wls: wlStockArrListIn){
+									System.out.println("reading in WatchListStock: " + wls);
 								}
 							} catch (ClassNotFoundException | IOException e1) {
 								// TODO Auto-generated catch block
@@ -122,14 +141,18 @@ public class FileHandling {
 				         FileOutputStream fileOut = new FileOutputStream(file.toString());
 				         ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
 
-				         // write something in the file
+				         // write Trade items in the file
 				         ArrayList<Trade> tradeArrList = new ArrayList<Trade>();
 				         tradeArrList.addAll(observableListOfTrades);
-				         System.out.println("DIU LA SING: " + tradeArrList.size());
+				         //System.out.println("Save as: " + tradeArrList.size());
+				         objOut.writeObject(tradeArrList);				        	     
+				         // write HashMap of Target and StopLoss in the file
+				         objOut.writeObject(ctTickerTargetMap);
+				         objOut.writeObject(ctTickerStopLossMap);
+				         // 
 				         ArrayList<WatchListStock> wlStockArrList = new ArrayList<WatchListStock>();
 				         wlStockArrList.addAll(observableListOfWatchListStocks);
-				         
-				         objOut.writeObject(tradeArrList);				        	     
+				         objOut.writeObject(wlStockArrList);				        	     
 			        	 //objOut.writeObject(wlStockArrList);
 			
 				         // close the stream
@@ -169,19 +192,20 @@ public class FileHandling {
     
     public void defineFileTree(){
     	TreeItem<String> root = new TreeItem<String>("Portfolio");
-    	root.setExpanded(true);
-    	fxFileTree.setRoot(root);
     	fxFileTree.setShowRoot(true);
+    	root.setExpanded(true);
+    	//fxFileTree.setRoot(root);
     }
 
     public void populateTree(String fileName, String filePath){
-    	addLeaf(fileName, (TreeItem<String>) fxFileTree.getRoot(), filePath);
+    	//addLeaf(fileName, (TreeCell<Path>) fxFileTree.getRoot(), filePath);
     	
     }
     
     public void addLeaf(String leaf, TreeItem<String> parent, String filePath){
     	TreeItem<String> item = new TreeItem<>(leaf);
-    	item.setExpanded(true);
+    	//Tooltip.install(item, filePath);
+    	//item.setExpanded(true);
     	parent.getChildren().add(item);
     }
     

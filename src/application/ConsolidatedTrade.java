@@ -66,8 +66,6 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	
 	
 	
-	
-	
 	// Concurrent task to get price
 	private ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -91,9 +89,10 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 		this.position 		= new SimpleStringProperty(position);
 		this.pnl_i 			= pnl_i;
 		this.pnl 			= new SimpleDoubleProperty(0);
-		
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
+
+
 		// multi-threading
 		Random rn = new Random();
 		int sec = (30 + rn.nextInt((180-30)+1));

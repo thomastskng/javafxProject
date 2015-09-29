@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.application.Application;
 import java.net.URL;
 import java.time.LocalDate;
+import java.io.Serializable;
 import java.lang.*;
 import javafx.scene.control.cell.*;
 import javafx.collections.*;
@@ -44,10 +45,11 @@ import javafx.collections.ListChangeListener.Change;
 import java.util.Collections.*;
 import java.util.stream.Collectors;
 
-public class Portfolio {
+public class Portfolio implements Serializable{
 
 	HashMap<String, ArrayList<Trade>> portfolio;
-	HashMap<String,ConsolidatedTrade> tempConsolidatedTradeHashMap;
+	HashMap<String,Double> ctTickerTargetMap;
+	HashMap<String,Double> ctTickerStopLossMap;
     /**
      * The data as an observable list of Consolidated Trades.
      */
@@ -70,11 +72,12 @@ public class Portfolio {
 	private final ReadOnlyDoubleWrapper totalAssetVal;
 
 	// Read in tableView and populate HashMap
-	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades){
+	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades, HashMap<String,Double> ctTickerTargetMap, HashMap<String,Double> ctTickerStopLossMap){
 		this.observableListOfConsolidatedTrades = observableListOfConsolidatedTrades;
+		this.ctTickerTargetMap = ctTickerTargetMap;
+		this.ctTickerStopLossMap = ctTickerStopLossMap;
 		
 		portfolio = new HashMap<String, ArrayList<Trade>>();
-		tempConsolidatedTradeHashMap = new HashMap<String, ConsolidatedTrade>();
 		
 		// put trades from transaction log into hashmap
 		for(Trade trade : observableListOfTrades){
@@ -87,10 +90,12 @@ public class Portfolio {
 			}
 		}
 		
-		// put existing Consolidated trades from existing Portfolio into hashMap
+		// put existing Consolidated trades' Target / StopLoss from existing Portfolio into hashMap
 		if(observableListOfConsolidatedTrades != null){
 			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
-					tempConsolidatedTradeHashMap.put(ct.getStockTicker(), ct);
+					this.ctTickerTargetMap.put(ct.getStockTicker(), ct.getTarget());
+					this.ctTickerStopLossMap.put(ct.getStockTicker(), ct.getStopLoss());
+					System.out.println("-----------------------------------------------------------------------------------");
 			}
 		}
 		observableListOfConsolidatedTrades.clear();
@@ -270,9 +275,8 @@ public class Portfolio {
 				position = "Error";
 			}
 			// Create consolidated Trade
-			if(tempConsolidatedTradeHashMap.containsKey(stockTicker)){
-				ConsolidatedTrade tempCT = tempConsolidatedTradeHashMap.get(stockTicker);
-				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,tempCT.getTarget(), tempCT.getStopLoss()));
+			if(this.ctTickerTargetMap.containsKey(stockTicker) && this.ctTickerStopLossMap.containsKey(stockTicker)){
+				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,this.ctTickerTargetMap.get(stockTicker), this.ctTickerStopLossMap.get(stockTicker)));
 
 			} else{
 				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,0,0));
@@ -291,5 +295,22 @@ public class Portfolio {
 		return this.observableListOfConsolidatedTrades;
 	}
 	
+	public HashMap<String,Double> getCtTickerTargetMap(){
+		if(observableListOfConsolidatedTrades != null){
+			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
+					this.ctTickerTargetMap.put(ct.getStockTicker(), ct.getTarget());
+			}
+		}
+		return this.ctTickerTargetMap;
+	}
+	
+	public HashMap<String,Double> getCtTickerStopLossMap(){
+		if(observableListOfConsolidatedTrades != null){
+			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
+					this.ctTickerStopLossMap.put(ct.getStockTicker(), ct.getStopLoss());
+			}
+		}
+		return this.ctTickerStopLossMap;
+}
 	
 }

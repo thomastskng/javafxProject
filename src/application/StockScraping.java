@@ -66,7 +66,7 @@ public interface StockScraping{
 		};
 		
 		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + ticker;
-		System.out.println(url);
+		//System.out.println(url);
 		Map<String,String> cookies = new HashMap<String,String>();
 		cookies.put("AALTP", "1");
 		Document doc = Jsoup.connect(url)

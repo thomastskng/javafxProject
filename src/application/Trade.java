@@ -57,18 +57,12 @@ import java.net.URLEncoder;
 
 public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
-	// attributes of each trade that go into the Transaction log
-	//String buySell;
-	//LocalDate transactionDate;
-	//String stockTicker;
-	//String stockName;
-	//double volume;
-	//double price;
-	//double transactionFee;
+	// Serialization Version ID
+	private static final long serialVersionUID = 1L;
+
 	
 	// properties
-	private Calendar creationTime;
-	private int counter;
+	private Long creationTime;
 	private ObjectProperty<LocalDate> transactionDate;
 	private StringProperty stockTicker;
 	private StringProperty remarks;
@@ -99,8 +93,8 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
 	
 	
-	public Trade(BuySell buySell, LocalDate transactionDate, String stockTicker, double volume, double price){
-		this.buySell = new SimpleStringProperty(buySell.toString());
+	public Trade(String buySell, LocalDate transactionDate, String stockTicker, double volume, double price){
+		this.buySell = new SimpleStringProperty(buySell);
 		this.remarks = new SimpleStringProperty("");
 		this.transactionDate = new SimpleObjectProperty<LocalDate>(transactionDate);
 		this.stockTicker = new SimpleStringProperty(stockTicker);
@@ -108,12 +102,9 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		this.price = new SimpleDoubleProperty(price);
 		this.transactionFee = new ReadOnlyDoubleWrapper();
 		this.transactionFee.bind(this.price.multiply(this.volume).multiply(0.0025));
-
-		// thread counter keeps refreshing
-		counter = 0;
 		
-		// Object creation time
-		creationTime = Calendar.getInstance();
+		// set / reset Object creation time
+		this.creationTime = Calendar.getInstance().getTimeInMillis();
 		// multi-threading current price
 		Random rn = new Random();
 		int sec = (30 + rn.nextInt((180-30)+1));
@@ -177,8 +168,23 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		});
 	}	
 	
-	public Calendar getCreationTime(){
+	public Trade(TradeProxy tradeProxy) {
+		this(	tradeProxy.buySell, 
+				tradeProxy.transactionDate, 
+				tradeProxy.stockTicker, 
+				tradeProxy.volume,
+				tradeProxy.price
+			);
+		this.setCreationTime(tradeProxy.creationTime);
+		this.setRemarks(tradeProxy.remarks);
+	}
+
+	public Long getCreationTime(){
 		return this.creationTime;
+	}
+
+	public void setCreationTime(Long creationTime){
+		this.creationTime = creationTime;
 	}
 	
 	// getters
@@ -342,8 +348,9 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 				//", Creation Time: " + getCreationTime() + 
 				//", Current price: " + getCurrentPrice() + 
 				"Stock Ticker: " + getStockTicker() +  
-				", Transasction date: " + getTransactionDate() 
-				+ ", Buy: " + getBuySell() + 
+				"Creation Time: " + getCreationTime() + 
+				", Transasction date: " + getTransactionDate() +  
+				", Buy: " + getBuySell() + 
 				", Volume: " + getVolume() + 
 				", Price: " + getPrice() + 
 				", Transaction fee: " + 
@@ -390,6 +397,53 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		return i;
 	}
 	
+	
+	private Object writeReplace() {
+	    return new TradeProxy(this);
+	}
+	
+	private void readObject(ObjectInputStream stream)
+	        throws InvalidObjectException {
+	    throw new InvalidObjectException("Proxy required");
+
+	}
+	
+	/*
+	 * Serialization Proxy
+	 * 
+	 * BuySell buySell, LocalDate transactionDate, String stockTicker, double volume, double price
+	 * */
+	private static class TradeProxy implements Serializable{
+		private static final long serialVersionUID = 1L;
+
+		private String buySell;
+		private LocalDate transactionDate;
+		private String stockTicker;
+		private double price;
+		private double volume;
+		private Long creationTime;
+		private String remarks;
+
+		private TradeProxy(Trade trade){
+			this.buySell = trade.getBuySell();
+			this.transactionDate = trade.getTransactionDate();
+			this.stockTicker = trade.getStockTicker();
+			this.price = trade.getPrice();
+			this.volume = trade.getVolume();
+			this.creationTime = trade.getCreationTime();
+			this.remarks = trade.getRemarks();
+		}
+		
+		private void writeObject(ObjectOutputStream s ) throws IOException{
+			s.defaultWriteObject();
+		}
+		
+		private Object readResolve() throws ObjectStreamException{
+			return new Trade(this);
+		}
+		
+		
+	}
 	
 	// Calendar.getInstance().getTime()
 	/*
