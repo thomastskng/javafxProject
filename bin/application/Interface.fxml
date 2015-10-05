@@ -17,7 +17,7 @@
    <center>
       <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="671.0" prefWidth="1102.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
         <items>
-            <TabPane prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;">
+            <TabPane fx:id="fxTabPaneUpper" prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;">
               <tabs>
                 <Tab closable="false" text="Portfolio">
                      <content>
@@ -58,6 +58,7 @@
                               <TableColumn fx:id="fxTransactionLogVolume" minWidth="21.0" prefWidth="62.0" text="Volume" />
                               <TableColumn fx:id="fxTransactionLogTransactionFee" minWidth="74.0" prefWidth="118.0" text="Transaction Fee" />
                               <TableColumn fx:id="fxTransactionLogCurrentPrice" minWidth="43.0" prefWidth="91.0" text="Current Price" />
+                              <TableColumn fx:id="fxTransactionLogPortfolio" prefWidth="75.0" text="Portfolio" />
                               <TableColumn fx:id="fxTransactionLogRemarks" minWidth="114.0" prefWidth="255.0" text="Remarks" />
                           </columns>
                            <effect>

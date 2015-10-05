@@ -45,8 +45,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.ObjectExpression;
 import javafx.beans.binding.StringExpression;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -79,8 +82,8 @@ import java.util.regex.Pattern;
 public class Controller implements Initializable{
 	
 	@FXML
-
 	// History Log 
+	public Stage primaryStage;
 	public TableView<Trade> fxTransactionLog;
 	public TableColumn<Trade, LocalDate> fxTransactionLogTransactionDate;
 	public TableColumn<Trade, String> fxTransactionLogStockTicker;
@@ -91,8 +94,10 @@ public class Controller implements Initializable{
 	public TableColumn<Trade,Number> fxTransactionLogCurrentPrice;
 	public TableColumn<Trade,String> fxTransactionLogRemarks;
 	public TableColumn<Trade,String> fxTransactionLogStockName;
+	public TableColumn<Trade,String> fxTransactionLogPortfolio;
 	
 	// Consolidated Trades
+	public TabPane fxTabPaneUpper;
 	public TableView<ConsolidatedTrade> fxPortfolio;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioTicker;
 	public TableColumn <ConsolidatedTrade, Number> fxPortfolioAvgPrice;
@@ -138,8 +143,8 @@ public class Controller implements Initializable{
 	public HBox fxWatchListPanel;
 	// MenuBar
 	public MenuBar fxMenuBar;
-	public TreeView<Path> fxFileTree;
-	
+
+	public ComboBox<String> portfolioComboBox;
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
 	private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
@@ -147,6 +152,11 @@ public class Controller implements Initializable{
 	// HashMap for storing and keep track of stock ticker and target / stop loss relationship
 	HashMap<String,Double> ctTickerTargetMap = new HashMap<String,Double>();
 	HashMap<String,Double> ctTickerStopLossMap = new HashMap<String,Double>();
+
+	// Save
+	BooleanProperty saved = new SimpleBooleanProperty();
+	InvalidationListener savedListener = obs -> saved.set(false);
+
 	
     /**
      * The data as an observable list of Trade.
@@ -159,7 +169,8 @@ public class Controller implements Initializable{
 				trade.volumeProperty(),
 				//trade.stockNameProperty(),
 				trade.priceProperty(),
-				trade.currentPriceProperty()
+				trade.currentPriceProperty(),
+				trade.portfolioProperty()
 
 		}
 	);
@@ -350,7 +361,7 @@ public class Controller implements Initializable{
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
 		observableListOfTrades.addAll(
-				new Trade("Buy", LocalDate.now().plusDays(3),"1",50,5)
+				new Trade("Buy", LocalDate.now().plusDays(3),"1",50,5,"portfolio")
 				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
@@ -358,7 +369,6 @@ public class Controller implements Initializable{
 				//new Trade(BuySell.Sell, LocalDate.now(),1,10000,9999),
 				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2)
 		);
-		
 		
 		// Add listener to observable list to listen to ALL changes
 		observableListOfTrades.addListener(new ListChangeListener<Trade>() {
@@ -379,6 +389,8 @@ public class Controller implements Initializable{
 				});
 				fxTransactionLog.setItems(sortedTrades);
 
+				setPortfolioComboBoxItems();
+				fxTransactionLogPortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));				
 				refreshPortfolio();
 				//initialPortfolio.displayDataStructure();
 				//initialPortfolio.getConsolidatedTrades();
@@ -411,6 +423,9 @@ public class Controller implements Initializable{
 		fxTransactionLogRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
 		fxTransactionLogCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
 		fxTransactionLogStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
+		fxTransactionLogPortfolio.setCellValueFactory(cellData -> cellData.getValue().portfolioProperty());
+		//fxTransactionLogPortfolio.setCellValueFactory(new PropertyValueFactory<Trade, String>("portfolio"));
+
 		
 		// define setCellFactory
 		fxTransactionLogTransactionDate.setCellFactory(col -> new DateEditingCell());
@@ -419,7 +434,7 @@ public class Controller implements Initializable{
 	    fxTransactionLogVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		fxTransactionLogTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
 		fxTransactionLogRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
-
+		
 		// initialise buySell choicebox
 		ObservableList<String> buySellList = FXCollections.observableArrayList(new String("Buy"), new String("Sell"));
 		fxTransactionLogBuySell.setCellFactory(ChoiceBoxTableCell.forTableColumn(buySellList));
@@ -428,7 +443,7 @@ public class Controller implements Initializable{
 					@Override
 					public void handle(CellEditEvent<Trade, String> t) {
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setBuySell(t.getNewValue());
-		                filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(""));
+		                //filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(""));
 
 					}
 				});
@@ -484,6 +499,26 @@ public class Controller implements Initializable{
 
 		
 		// initialise transaction fee
+		setPortfolioComboBoxItems();
+		//fxTransactionLogPortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));
+		
+		fxTransactionLogPortfolio.setCellFactory(tablecol -> {
+           ComboBoxTableCell<Trade,String> ct= new ComboBoxTableCell<Trade,String>();
+           ct.getItems().addAll(portfolioComboBox.getItems());
+           ct.setComboBoxEditable(true);
+           return ct;
+        });
+        
+		
+		/*
+    	fxTransactionLogPortfolio.setCellFactory(new Callback<TableColumn<Trade, String>, TableCell<Trade, String>>(){
+            @Override
+            public TableCell<Trade, String> call(TableColumn<Trade, String> param) {
+                return new LiveComboBoxTableCell<>(testing);
+            }
+		});
+		*/
+		
 		
 		// Drag and Drop TableRow
 		/*
@@ -926,6 +961,20 @@ public class Controller implements Initializable{
 		Label labelDatePicker = new Label("Date:");
 		datepicker.setPrefWidth(130);
 
+		// Portfolio name:
+		portfolioComboBox = new ComboBox();
+		//portfolioComboBox.setItems();
+		portfolioComboBox.setEditable(true);
+		Label labelPortfolio = new Label ("Portfolio");
+		portfolioComboBox.setPrefWidth(130);
+		
+		//(e-> {
+		//	for(Trade t: observableListOfTrades){
+		//		System.out.println("ComboBox: " + portfolioComboBox.getSelectionModel().getSelectedItem().toString() + " : " + fxTransactionLogStockName.getCellObservableValue(t));
+		//	}
+		//});
+		
+		
 		// capture user input: StockTicker, volume, price 
 		// Stock Ticker
 		Label labelStockTicker = new Label("Ticker:");
@@ -1015,12 +1064,12 @@ public class Controller implements Initializable{
 		
 		// Vertical Box stores text that prompt user:
 		VBox vb1 = new VBox();
-		vb1.getChildren().addAll(labelDatePicker,labelStockTicker, labelPrice, labelVolume);
+		vb1.getChildren().addAll(labelDatePicker,labelStockTicker, labelPrice, labelVolume, labelPortfolio);
 		vb1.setSpacing(20);
 		vb1.setAlignment(Pos.CENTER_RIGHT);
 		// Vertical Box stores user's input
 		VBox vb2 = new VBox();
-		vb2.getChildren().addAll(datepicker,tfStockTicker, tfPrice, tfVolume);
+		vb2.getChildren().addAll(datepicker,tfStockTicker, tfPrice, tfVolume,portfolioComboBox);
 		vb2.setSpacing(10);
 		
 		// horizontal box that combines vb1 and vb2 
@@ -1066,7 +1115,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade("Buy", datepicker.getValue(), tfStockTicker.getText(), volume, price);
+					Trade newTrade = new Trade("Buy", datepicker.getValue(), tfStockTicker.getText(), volume, price,portfolioComboBox.getValue());
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1096,7 +1145,7 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade("Sell", datepicker.getValue(), tfStockTicker.getText(), volume, price);
+					Trade newTrade = new Trade("Sell", datepicker.getValue(), tfStockTicker.getText(), volume, price, portfolioComboBox.getValue());
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
 					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
@@ -1242,12 +1291,36 @@ public class Controller implements Initializable{
 		fxWatchListPanel.setAlignment(Pos.CENTER);
 	}
    
+	
+	public void handlingIO(Stage primaryStage) throws Exception{
+		this.primaryStage = primaryStage;
+		new FileHandling(fxMenuBar,observableListOfTrades,observableListOfConsolidatedTrades, observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap, saved, this.primaryStage);
+	}
+	
+	public void setPortfolioComboBoxItems(){
+    	portfolioComboBox.setItems(null);
+    	ObservableSet<String> portfolioSet = FXCollections.observableSet();
+    	ObservableList<String> portfolios = FXCollections.observableArrayList();
+    	for(Trade tr: observableListOfTrades){
+    		//System.out.println("combobox: " + fxTransactionLogPortfolio.getCellObservableValue(tr).getValue());
+    		portfolioSet.add(fxTransactionLogPortfolio.getCellObservableValue(tr).getValue());
+		}
+    	portfolios.addAll(portfolioSet);
+    	portfolioComboBox.setItems(portfolios);
+
+	}
    
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
+		observableListOfTrades.addListener(savedListener);
+		observableListOfConsolidatedTrades.addListener(savedListener);
+		observableListOfWatchListStocks.addListener(savedListener);
+		//fxTransactionLog.getItems().addListener(savedListener);
+		//fxPortfolio.getItems().addListener(savedListener);
+		//fxWatchList.getItems().addListener(savedListener);
+		initialiseStockCalculator();
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
-		initialiseStockCalculator();
 		initializeWatchListPanel();
 		initializeFxWatchList();
 		initializeFilteredTable();
@@ -1259,7 +1332,8 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-		new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap);
+		//new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap, saved, this.primaryStage);
+
 	}
 	
 	

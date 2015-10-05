@@ -45,6 +45,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	private DoubleProperty volumeHeld;
 	private DoubleProperty volumeSold;
 	private StringProperty position;
+	private StringProperty portfolio;
 	private DoubleProperty pnl;
 	ArrayList<Double> pnl_i;
 	public final ReadOnlyDoubleWrapper uPnl;
@@ -81,7 +82,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	
 	
 	
-	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss){
+	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss, String portfolio){
 		this.stockTicker 	= new SimpleStringProperty(stockTicker);
 		this.avgPrice 		= new SimpleDoubleProperty(avgPrice);
 		this.volumeHeld 	= new SimpleDoubleProperty(volumeHeld);
@@ -91,7 +92,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 		this.pnl 			= new SimpleDoubleProperty(0);
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
-
+		this.portfolio		= new SimpleStringProperty(portfolio);
 
 		// multi-threading
 		Random rn = new Random();
@@ -295,7 +296,18 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	public void setStopLoss(double stopLoss){
 		this.stopLoss.set(stopLoss);
 	}
+	
+	public String getPortfolio(){
+		return this.portfolio.get();
+	}
+	
+	public StringProperty portfolioProperty(){
+		return this.portfolio;
+	}
 	 
+	public void setPortfolio(String portfolio){
+		this.portfolio.set(portfolio);
+	}
 	public ReadOnlyDoubleProperty currentPriceProperty(){
 		 return this.currentPrice.getReadOnlyProperty();
 	}

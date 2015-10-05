@@ -63,6 +63,7 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
 	// properties
 	private Long creationTime;
+	private StringProperty portfolio;
 	private ObjectProperty<LocalDate> transactionDate;
 	private StringProperty stockTicker;
 	private StringProperty remarks;
@@ -93,13 +94,14 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	
 	
 	
-	public Trade(String buySell, LocalDate transactionDate, String stockTicker, double volume, double price){
+	public Trade(String buySell, LocalDate transactionDate, String stockTicker, double volume, double price, String portfolio){
 		this.buySell = new SimpleStringProperty(buySell);
 		this.remarks = new SimpleStringProperty("");
 		this.transactionDate = new SimpleObjectProperty<LocalDate>(transactionDate);
 		this.stockTicker = new SimpleStringProperty(stockTicker);
 		this.volume = new SimpleDoubleProperty(volume);
 		this.price = new SimpleDoubleProperty(price);
+		this.portfolio = new SimpleStringProperty(portfolio);
 		this.transactionFee = new ReadOnlyDoubleWrapper();
 		this.transactionFee.bind(this.price.multiply(this.volume).multiply(0.0025));
 		
@@ -173,7 +175,8 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 				tradeProxy.transactionDate, 
 				tradeProxy.stockTicker, 
 				tradeProxy.volume,
-				tradeProxy.price
+				tradeProxy.price,
+				tradeProxy.portfolio
 			);
 		this.setCreationTime(tradeProxy.creationTime);
 		this.setRemarks(tradeProxy.remarks);
@@ -269,6 +272,17 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		this.remarks.set(remarks);
 	}
 
+	public String getPortfolio(){
+		return this.portfolio.getValue();
+	}
+	
+	public StringProperty portfolioProperty(){
+		return this.portfolio;
+	}
+	
+	public void setPortfolio(String portfolio){
+		this.portfolio.set(portfolio);
+	}
 	
 	public ReadOnlyDoubleProperty transactionFeeProperty() {
 		return this.transactionFee.getReadOnlyProperty();
@@ -423,6 +437,7 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		private double volume;
 		private Long creationTime;
 		private String remarks;
+		private String portfolio;
 
 		private TradeProxy(Trade trade){
 			this.buySell = trade.getBuySell();
@@ -432,6 +447,7 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 			this.volume = trade.getVolume();
 			this.creationTime = trade.getCreationTime();
 			this.remarks = trade.getRemarks();
+			this.portfolio = trade.getPortfolio();
 		}
 		
 		private void writeObject(ObjectOutputStream s ) throws IOException{
