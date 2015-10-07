@@ -98,6 +98,7 @@ public class Controller implements Initializable{
 	
 	// Consolidated Trades
 	public TabPane fxTabPaneUpper;
+	/*
 	public TableView<ConsolidatedTrade> fxPortfolio;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioTicker;
 	public TableColumn <ConsolidatedTrade, Number> fxPortfolioAvgPrice;
@@ -111,6 +112,7 @@ public class Controller implements Initializable{
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPosition;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioPnLHistory;
 	public TableColumn <ConsolidatedTrade, String> fxPortfolioStockName;
+	*/
 
 	// WatchList
 	public TableView<WatchListStock> fxWatchList;
@@ -305,8 +307,9 @@ public class Controller implements Initializable{
 		TableColumn<Trade, Number> filterTableTransactionFee = new TableColumn("Transaction Fee");
 		TableColumn<Trade, Number> filterTableCurrentPrice = new TableColumn("Last");
 		TableColumn<Trade, String> filterTableRemarks = new TableColumn("Remarks");
-
-		filterTable.getColumns().addAll(filterTableTransactionDate,filterTableStockName,filterTableStockTicker,filterTableBuySell,filterTablePrice,filterTableVolume,filterTableTransactionFee,filterTableCurrentPrice,filterTableRemarks);
+		TableColumn<Trade,String> filterTablePortfolio = new TableColumn("Portfolio"); 
+		
+		filterTable.getColumns().addAll(filterTableTransactionDate,filterTableStockName,filterTableStockTicker,filterTableBuySell,filterTablePrice,filterTableVolume,filterTableTransactionFee,filterTableCurrentPrice,filterTableRemarks,filterTablePortfolio);
 		
 		
 		// define setCellValueFactory
@@ -319,11 +322,13 @@ public class Controller implements Initializable{
 		filterTableTransactionFee.setCellValueFactory(cellData -> cellData.getValue().transactionFeeProperty());
 		filterTableCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
 		filterTableRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
-		
+		filterTablePortfolio.setCellValueFactory(cellData -> cellData.getValue().portfolioProperty());
+
 		// define setCellFactory
 		filterTableTransactionDate.setCellFactory(col -> new DateEditingCell());
 		filterTableStockTicker.setCellFactory(col -> new EditingStockTickerCell<Trade>(""));
 		filterTablePrice.setCellFactory(col -> new EditingNumberCell<Trade>("price-cell"));
+
 		filterTableVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		filterTableTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
 		filterTableRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -355,6 +360,9 @@ public class Controller implements Initializable{
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setStockTicker(t.getNewValue());
 					}
 				});
+		setPortfolioComboBoxItems();
+		filterTablePortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));
+	
 		
 	}
 	
@@ -499,6 +507,7 @@ public class Controller implements Initializable{
 
 		
 		// initialise transaction fee
+
 		setPortfolioComboBoxItems();
 		//fxTransactionLogPortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));
 		
@@ -653,6 +662,7 @@ public class Controller implements Initializable{
 	
 		    }
 		});
+		
 		/*
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
 		sortedTrades.setComparator(new Comparator<ConsolidatedTrade>(){
@@ -664,7 +674,7 @@ public class Controller implements Initializable{
 		
 		fxPortfolio.setItems(sortedTrades);
 		*/
-		
+		/*
 		// define setCellValueFactory
 		fxPortfolioTicker.setCellValueFactory(cellData -> cellData.getValue().stockTickerProperty());
 		fxPortfolioAvgPrice.setCellValueFactory(cellData -> cellData.getValue().avgPriceProperty());
@@ -690,6 +700,7 @@ public class Controller implements Initializable{
 		fxPortfolioPnLHistory.setCellFactory(TextFieldTableCell.forTableColumn());
 		//fxPortfolioPosition.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
 		fxPortfolioTicker.setCellFactory(col -> new NonEditableStockTickerCell<ConsolidatedTrade>());
+		*/
 		
 		/*****************************************************
 		 *	Table row highlighting for newly added trade
@@ -700,7 +711,7 @@ public class Controller implements Initializable{
 		 *  Most of the time this will be null but when a new Trade is added to the list, 
 		 *  it will be set to that new Trade:
 		 */
-		final ObjectProperty<ConsolidatedTrade> recentlyAddedTrade = new SimpleObjectProperty<>();
+		//final ObjectProperty<ConsolidatedTrade> recentlyAddedTrade = new SimpleObjectProperty<>();
 		/*
 		 * 2. Register a ListListener with the table's items list. 
 		 * When a new item is added to the list, update the recentlyAddedTrade. 
@@ -709,6 +720,7 @@ public class Controller implements Initializable{
 		 * some delay (a second or two).:
 		 */
 		
+		/*
 		final Duration timeToGetOld = Duration.seconds(1.0);
 		fxPortfolio.getItems().addListener((Change<? extends ConsolidatedTrade> change) ->{
 			while(change.next()){
@@ -730,7 +742,10 @@ public class Controller implements Initializable{
 		});
 		
 		
-		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::stockTickerProperty, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty, observableListOfTrades, filterListOfTrades, fxTabPaneLower));
+		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::stockTickerProperty, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty, 
+				//observableListOfTrades, 
+				filterListOfTrades, fxTabPaneLower));
+		*/
 	}
 	
 	// refresh Portfolio whenever there is any change in the Transaction Log
@@ -746,8 +761,8 @@ public class Controller implements Initializable{
         initialPortfolio = new Portfolio(observableListOfTrades, observableListOfConsolidatedTrades
         		,ctTickerTargetMap, ctTickerStopLossMap
         		);
-        fxPortfolio.setEditable(true);
-		
+        //fxPortfolio.setEditable(true);
+		/*
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
 		sortedTrades.setComparator(new Comparator<ConsolidatedTrade>(){
 			@Override
@@ -755,7 +770,12 @@ public class Controller implements Initializable{
 				return trade1.compareTo(trade2);
 			}
 		});
-		
+		*/
+		//fxPortfolio.setItems(sortedTrades);
+        for(String portfolioName : initialPortfolio.getUniquePortfolioSet()){
+        	new PortfolioTable(fxTabPaneUpper, initialPortfolio.getConsolidatedTrades(), portfolioName , filterListOfTrades, fxTabPaneLower);
+        }
+        
 		ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
 		ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
 		
@@ -768,15 +788,16 @@ public class Controller implements Initializable{
 		    System.out.println("StopLoss HashMap: " + entry.getKey() + "/" + entry.getValue());
 		}
 		
+		/*
 		System.out.println("***************");
 		//initialPortfolio.displayDataStructure();
-
-		fxPortfolio.setItems(sortedTrades);
 		System.out.println("Item still in Transaction Log: ");
 		for(Trade ttt : fxTransactionLog.getItems()){
 		//for(Trade ttt : observableListOfTrades){
 			System.out.println( "Change: " + ttt);
 		}
+		*/
+		
 	}
 
 	// initialise fxWatchList 

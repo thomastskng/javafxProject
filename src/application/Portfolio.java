@@ -86,7 +86,7 @@ public class Portfolio implements Serializable{
 		
 		// put trades from transaction log into hashmap
 		for(Trade trade : observableListOfTrades){
-			String portfolioKey =  trade.getPortfolio()+ "!~" + trade.getStockTicker();
+			String portfolioKey =  trade.getPortfolio()+ "~!~" + trade.getStockTicker();
 			uniquePortfolioSet.add(trade.getPortfolio());
 			
 			if(!portfolio.containsKey(portfolioKey)){
@@ -101,8 +101,8 @@ public class Portfolio implements Serializable{
 		// put existing Consolidated trades' Target / StopLoss from existing Portfolio into hashMap
 		if(observableListOfConsolidatedTrades != null){
 			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
-					this.ctTickerTargetMap.put(ct.getStockTicker(), ct.getTarget());
-					this.ctTickerStopLossMap.put(ct.getStockTicker(), ct.getStopLoss());
+					this.ctTickerTargetMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getTarget());
+					this.ctTickerStopLossMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getStopLoss());
 					System.out.println("-----------------------------------------------------------------------------------");
 			}
 		}
@@ -247,7 +247,7 @@ public class Portfolio implements Serializable{
 	public void generateConsolidatedTrade(){
 		for(Map.Entry<String,ArrayList<Trade>> entry : portfolio.entrySet()){
 			// initialize 8 variables
-			String[] portfolioKey = entry.getKey().split("!~");
+			String[] portfolioKey = entry.getKey().split("~!~");
 			String stockTicker = portfolioKey[1];
 			double avgPrice = 0;
 			double mktVal = 0;
@@ -285,8 +285,8 @@ public class Portfolio implements Serializable{
 				position = "Error";
 			}
 			// Create consolidated Trade
-			if(this.ctTickerTargetMap.containsKey(stockTicker) && this.ctTickerStopLossMap.containsKey(stockTicker)){
-				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,this.ctTickerTargetMap.get(stockTicker), this.ctTickerStopLossMap.get(stockTicker), portfolioName));
+			if(this.ctTickerTargetMap.containsKey(entry.getKey()) && this.ctTickerStopLossMap.containsKey(entry.getKey())){
+				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,this.ctTickerTargetMap.get(entry.getKey()), this.ctTickerStopLossMap.get(entry.getKey()), portfolioName));
 
 			} else{
 				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,0,0,portfolioName));
@@ -308,7 +308,7 @@ public class Portfolio implements Serializable{
 	public HashMap<String,Double> getCtTickerTargetMap(){
 		if(observableListOfConsolidatedTrades != null){
 			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
-					this.ctTickerTargetMap.put(ct.getStockTicker(), ct.getTarget());
+					this.ctTickerTargetMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getTarget());
 			}
 		}
 		return this.ctTickerTargetMap;
@@ -317,7 +317,7 @@ public class Portfolio implements Serializable{
 	public HashMap<String,Double> getCtTickerStopLossMap(){
 		if(observableListOfConsolidatedTrades != null){
 			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
-					this.ctTickerStopLossMap.put(ct.getStockTicker(), ct.getStopLoss());
+					this.ctTickerStopLossMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getStopLoss());
 			}
 		}
 		return this.ctTickerStopLossMap;

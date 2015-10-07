@@ -57,14 +57,16 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
     /**
      * The data as an observable list of Trade.
      */
-	private ObservableList<Trade> observableListOfTrades;
+	//private ObservableList<Trade> observableListOfTrades;
 	private FilteredList<Trade> filterListOfTrades;
 	
     private final Timeline targetFlashTimeline;
     private final Timeline stopLossFlashTimeline;
 
 
-    public AnimatedPortfolioTableRow(ObjectExpression<T> fRecentlyAddedProperty,Function<T,StringExpression> tickerExtractor,Function<T, BooleanExpression> targetExtractor, Function<T, BooleanExpression> stopLossExtractor, Function<T,IntegerExpression> uPnlExtractor, Function<T,IntegerExpression> pnlExtractor, ObservableList<Trade> observableListOfTrades, FilteredList<Trade> filterListOfTrades, TabPane fxTabPaneLower) {
+    public AnimatedPortfolioTableRow(ObjectExpression<T> fRecentlyAddedProperty,Function<T,StringExpression> tickerExtractor,Function<T, BooleanExpression> targetExtractor, Function<T, BooleanExpression> stopLossExtractor, Function<T,IntegerExpression> uPnlExtractor, Function<T,IntegerExpression> pnlExtractor, 
+    		//ObservableList<Trade> observableListOfTrades, 
+    		FilteredList<Trade> filterListOfTrades, TabPane fxTabPaneLower) {
         recentItem = fRecentlyAddedProperty;
         recentItem.addListener(new WeakInvalidationListener(recentlyAddedListener));
 
@@ -76,7 +78,7 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
         
         this.fxTabPaneLower = fxTabPaneLower;
         
-        this.observableListOfTrades = observableListOfTrades;
+        //this.observableListOfTrades = observableListOfTrades;
         this.filterListOfTrades = filterListOfTrades;
        
         targetFlashTimeline = new Timeline(
@@ -102,12 +104,12 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
                 System.out.println(tickerBE.get());
                 
                 fxTabPaneLower.getSelectionModel().select(1);
-                fxTabPaneLower.getTabs().get(1).setText("Filtered History: " + tickerBE.get());  
+                fxTabPaneLower.getTabs().get(1).setText("Filtered History: " + String.format("%04d",Integer.parseInt(tickerBE.get())));  
                 //.setItems(filterListOfTrades)
                 ((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).setItems(filterListOfTrades);
-                System.out.println(((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).getItems().size());
-                System.out.println(filterListOfTrades.size());
-                System.out.println(observableListOfTrades.size());
+                //System.out.println(((TableView<Trade>)fxTabPaneLower.getTabs().get(1).getContent()).getItems().size());
+                //System.out.println(filterListOfTrades.size());
+                //System.out.println(observableListOfTrades.size());
                 
           } else if(isEmpty()){
         	  getTableView().getSelectionModel().clearSelection();
