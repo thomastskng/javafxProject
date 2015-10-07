@@ -797,7 +797,7 @@ public class Controller implements Initializable{
 			System.out.println( "Change: " + ttt);
 		}
 		*/
-		
+        removeEmptyTabs();
 	}
 
 	// initialise fxWatchList 
@@ -1329,6 +1329,16 @@ public class Controller implements Initializable{
     	portfolios.addAll(portfolioSet);
     	portfolioComboBox.setItems(portfolios);
 
+	}
+	
+	public void removeEmptyTabs(){
+		for(Tab tab : fxTabPaneUpper.getTabs()){
+			TableView<ConsolidatedTrade> tableView = (TableView<ConsolidatedTrade>) tab.getContent();
+			if(tableView.getItems().size() <= 0){
+				fxTabPaneUpper.getTabs().remove(tab);
+			}
+		}
+		
 	}
    
 	@Override // This method is called by the FXMLLoader when initialization is complete
