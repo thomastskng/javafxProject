@@ -35,6 +35,21 @@ public class PortfolioTable {
 		if(tabIndex == -1){					
 			Tab portfolioTab = new Tab();
 			portfolioTableView = new TableView<ConsolidatedTrade>();
+			portfolioTableView.getStyleClass().add("portfolio");
+			/*
+			portfolioTableView.setStyle("-fx-background-color: grey;"+
+										"-fx-control-inner-background:  #3D3D3D;" + 
+										"-fx-accent:  derive(-fx-control-inner-background, -40%);" + 
+										"-fx-cell-hover-color:  derive(-fx-control-inner-background, -20%);" + 
+										"-fx-text-fill:  #FFFFFF;" + 
+										"-fx-font-weight:  bold;" + 
+										"-fx-border-color:  skyblue;" + 
+										"-fx-table-cell-border-color:  transparent;" + 
+										"-fx-table-header-border-color: yellow;" + 
+										"-fx-table-header-color: yellow;" + 
+										"-fx-table-column-header-background: yellow;");
+			*/
+			
 			portfolioTab.setContent(portfolioTableView);
 			this.fxTabPaneUpper.getTabs().add(portfolioTab);
 			
@@ -63,6 +78,10 @@ public class PortfolioTable {
 
 			
 			portfolioTableView.getColumns().addAll(fxPortfolioStockName,fxPortfolioTicker,fxPortfolioAvgCost,fxPortfolioCurrentPrice,fxPortfolioUPnL,fxPortfolioPnL,fxPortfolioTarget,fxPortfolioStopLoss,fxPortfolioPosition,fxPortfolioVolumeHeld,fxPortfolioVolumeSold,fxPortfolioPnLHistory,fxPortfolioPortfolioName);
+
+			for(TableColumn tc:portfolioTableView.getColumns()){
+				tc.getStyleClass().add("portfolioCol");
+			}
 			
 			// define setCellValueFactory
 			fxPortfolioTicker.setCellValueFactory(cellData -> cellData.getValue().stockTickerProperty());

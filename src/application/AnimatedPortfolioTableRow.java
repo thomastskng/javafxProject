@@ -25,7 +25,7 @@ import javafx.scene.input.MouseEvent;
 
 public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
 
-    private static final PseudoClass PS_NEW = PseudoClass.getPseudoClass("new-row");
+	private static final PseudoClass PS_NEW = PseudoClass.getPseudoClass("new-row");
     private static final PseudoClass PS_TARGET_FLASH = PseudoClass.getPseudoClass("target-flash-row");
     private static final PseudoClass PS_TARGET_HL = PseudoClass.getPseudoClass("target-highlight");
     private static final PseudoClass PS_STOPLOSS_FLASH = PseudoClass.getPseudoClass("stopLoss-flash-row");
@@ -67,7 +67,7 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
     public AnimatedPortfolioTableRow(ObjectExpression<T> fRecentlyAddedProperty,Function<T,StringExpression> tickerExtractor,Function<T, BooleanExpression> targetExtractor, Function<T, BooleanExpression> stopLossExtractor, Function<T,IntegerExpression> uPnlExtractor, Function<T,IntegerExpression> pnlExtractor, 
     		//ObservableList<Trade> observableListOfTrades, 
     		FilteredList<Trade> filterListOfTrades, TabPane fxTabPaneLower) {
-        recentItem = fRecentlyAddedProperty;
+    	recentItem = fRecentlyAddedProperty;
         recentItem.addListener(new WeakInvalidationListener(recentlyAddedListener));
 
         this.tickerExtractor = tickerExtractor;
@@ -95,7 +95,7 @@ public class AnimatedPortfolioTableRow<T> extends TableRow<T> {
                 new KeyFrame(Duration.seconds(1.0), e -> pseudoClassStateChanged(PS_STOPLOSS_FLASH, false)));
         stopLossFlashTimeline.setCycleCount(Animation.INDEFINITE);
   	  
-        this.setStyle("-fx-selection-bar:gold");
+        this.setStyle("-fx-selection-bar:skyblue");
 
         setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && (!isEmpty()) ) {

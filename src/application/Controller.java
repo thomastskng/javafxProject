@@ -1085,12 +1085,12 @@ public class Controller implements Initializable{
 		
 		// Vertical Box stores text that prompt user:
 		VBox vb1 = new VBox();
-		vb1.getChildren().addAll(labelDatePicker,labelStockTicker, labelPrice, labelVolume, labelPortfolio);
+		vb1.getChildren().addAll(labelDatePicker,labelPortfolio,labelStockTicker, labelPrice, labelVolume);
 		vb1.setSpacing(20);
 		vb1.setAlignment(Pos.CENTER_RIGHT);
 		// Vertical Box stores user's input
 		VBox vb2 = new VBox();
-		vb2.getChildren().addAll(datepicker,tfStockTicker, tfPrice, tfVolume,portfolioComboBox);
+		vb2.getChildren().addAll(datepicker,portfolioComboBox,tfStockTicker, tfPrice, tfVolume);
 		vb2.setSpacing(10);
 		
 		// horizontal box that combines vb1 and vb2 
@@ -1119,7 +1119,7 @@ public class Controller implements Initializable{
 		
 		// What happens when the BUY button is clicked
 		buyButton.setOnAction(e -> {
-			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true || !(portfolioComboBox.getValue()!=null)){
 				AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
 			} else{
 				//System.out.println(Double.parseDouble(tfPrice.getText()));
@@ -1129,27 +1129,16 @@ public class Controller implements Initializable{
 					int stockTicker = Integer.parseInt(tfStockTicker.getText());
 					double price = Double.parseDouble(tfPrice.getText());
 					double volume = Double.parseDouble(tfVolume.getText());
-
-					/*System.out.println("Transaction date:" + datepicker.getValue());
-					System.out.println("Buy / Sell: " + buySellBox.getValue());
-					System.out.println("Stock Ticker: " + stockTicker);
-					System.out.println("Price: " + price);
-					System.out.println("Volume: " + volume);
-					*/
 					Trade newTrade = new Trade("Buy", datepicker.getValue(), tfStockTicker.getText(), volume, price,portfolioComboBox.getValue());
-					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
-					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
-
-					//fxTransactionLog.getItems().add(newTrade);
-					//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
+					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 				}
 			}
 		});
 
 		// What happens when the Sell button is clicked
 		sellButton.setOnAction(e -> {
-			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true || !(portfolioComboBox.getValue()!=null)){
 				AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
 			} else{
 				//System.out.println(Double.parseDouble(tfPrice.getText()));
@@ -1169,7 +1158,7 @@ public class Controller implements Initializable{
 					Trade newTrade = new Trade("Sell", datepicker.getValue(), tfStockTicker.getText(), volume, price, portfolioComboBox.getValue());
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
-					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 
 					//fxTransactionLog.getItems().add(newTrade);
 					//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
@@ -1185,7 +1174,7 @@ public class Controller implements Initializable{
 				double price = Double.parseDouble(tfPrice.getText());
 				WatchListStock newWLStock = new WatchListStock("Last <= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
-				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 
 			}
 		});
@@ -1198,7 +1187,7 @@ public class Controller implements Initializable{
 				double price = Double.parseDouble(tfPrice.getText());				
 				WatchListStock newWLStock = new WatchListStock("Last >= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
-				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 			}
 		});
 		
@@ -1212,7 +1201,7 @@ public class Controller implements Initializable{
 
 		// When Cancel Button is clicked
 		cancelButton.setOnAction(e ->{
-			clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+			clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 		});
 		
 		// When Delete Trade button is clicked
@@ -1252,12 +1241,12 @@ public class Controller implements Initializable{
 	}
 	  
    // clear all texfield in fxStockCalculator
-   public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume){
+   public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume, ComboBox portfolioComboBox){
 		datepicker.setValue(LocalDate.now());
 		tfStockTicker.clear();
 		tfPrice.clear(); 
 		tfVolume.clear();
-		tfStockTicker.requestFocus();
+		portfolioComboBox.requestFocus();
 	}
 	
 	public void initializeWatchListPanel(){
