@@ -24,7 +24,7 @@ public interface StockScraping{
 		//System.out.println(doc);
 		Element content = doc.select("meta[itemprop=price]").first();
 		double cp =  Double.parseDouble(content.attr("content"));
-		return new StockScrapedInfo("abc", cp, 100, "abc");
+		return new StockScrapedInfo("abc", cp,"", 100, "abc");
 
 		}
 	
@@ -78,13 +78,109 @@ public interface StockScraping{
 		
 		//getAAStockCookies(url);
 		//System.out.println(doc.html());
-		Elements elements = doc.select("ul:contains(Last) + ul>li>span");
-		double cp = Double.parseDouble(elements.get(0).ownText());
-		Elements sn = doc.select("title");
-		String[] title = sn.get(0).ownText().split("\\(");
+		// Scrape 
+
+		
+		// Scrape current price
+		Elements scrape1 = doc.select("ul:contains(Last) + ul>li>span");
+		// Scrape +ve / -ve indicator of current price
+		String posNegBoldForLast = scrape1.attr("class");
+		double cp = Double.parseDouble(scrape1.get(0).ownText());
+		
+		// Scrape Chg
+		Elements scrape2 = doc.select("ul:contains(Chg) + ul>li>span");
+		System.out.println("Chg: " + scrape2.attr("class") + scrape2.get(0).ownText());
+		String posNegBoldForChg = scrape2.attr("class");
+		String chg = scrape2.get(0).ownText();
+		
+		// Scrape Chg%
+		Elements scrape3 = doc.select("ul:contains(Chg(%)) + ul>li>span");
+		System.out.println("Chg%: " + scrape3.attr("class") + scrape3.get(0).ownText());
+		String posNegBoldForChgPercent = scrape3.attr("class");
+		String chgPercent = scrape3.get(0).ownText();
+		
+		// Scrape Stock Name
+		Elements scrape4 = doc.select("title");
+		String[] title = scrape4.get(0).ownText().split("\\(");
 		String stockName = title[0];
-		Elements lotSize = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(lotSize.get(0).ownText());
+		
+		// Scrape lot size
+		Elements scrape5 = doc.select("td:contains(Lot Size) + td");
+		double ls = Double.parseDouble(scrape5.get(0).ownText());
+		
+		// Scrape bid(delayed)
+		String bid_delayed = scrapeAAStockElement(doc,"ul:contains(Bid(Delayed)) + ul>li");
+
+		// Scrape ask(delayed)
+		String ask_delayed = scrapeAAStockElement(doc,"ul:contains(Ask(Delayed)) + ul>li");
+
+		// Scrape High
+		String high = scrapeAAStockElement(doc,"ul:contains(high) + ul>li");
+
+		// Scrape low
+		String low = scrapeAAStockElement(doc,"ul:matches(Low) + ul>li");
+
+		// Scrape Open
+		String open = scrapeAAStockElement(doc,"ul:contains(Open) + ul>li");
+
+		// Scrape Prev Close
+		String prev_close = scrapeAAStockElement(doc,"ul:contains(Prev Close) + ul>li");
+		
+		// Scrape Volume
+		String volume = scrapeAAStockElement(doc,"ul:matches(Volume) + ul>li");
+		
+		// Scrape Turnover
+		String turnover = scrapeAAStockElement(doc,"ul:matches(Turnover) + ul>li");
+		
+		// Scrape Spread
+		String spread = scrapeAAStockElement(doc,"td:matches(Spread) + td");
+		
+		// Scrape Spread
+		String peRatio = scrapeAAStockElement(doc,"td:matches(P/E Ratio) + td");
+		
+		// Scrape Yield
+		String yield = scrapeAAStockElement(doc,"td:matches(Yield) + td");
+		
+		// Scrape Dividend Payout
+		String dividend_payout = scrapeAAStockElement(doc,"td:matches(Dividend Payout) + td");
+
+		// Scrape EPS
+		String eps = scrapeAAStockElement(doc,"td:matches(EPS) + td");
+
+		// Scrape Market Cap
+		String market_cap = scrapeAAStockElement(doc,"td:matches(Market Cap) + td");
+		
+		// Scrape Market Cap
+		String nav = scrapeAAStockElement(doc,"td:matches(NAV) + td");
+		
+		// Scrape dividend per share
+		String dps = scrapeAAStockElement(doc,"td:matches(DPS) + td>span" );
+
+		// Scrape 1 month range, 2 month range, 3 month range, 52 week range, Rate Ratio, Volume Ratio
+		String oneMonthRange = scrapeAAStockElement(doc,"ul:matches(1 Month Range) + ul>li");
+		String twoMonthRange = scrapeAAStockElement(doc,"ul:matches(2 Month Range) + ul>li");
+		String threeMonthRange = scrapeAAStockElement(doc,"ul:matches(3 Month Range) + ul>li");
+		String fiftyTwoWeekRange = scrapeAAStockElement(doc,"ul:matches(52 Week Range) + ul>li");
+		String rateRatio = scrapeAAStockElement(doc,"ul:matches(Rate Ratio) + ul>li");
+		String volumeRatio = scrapeAAStockElement(doc,"ul:matches(Volume Ratio) + ul>li");
+
+		// Scrape SMA 10, 20, 50, 100, 250
+		String sma10 = scrapeAAStockElement(doc,"div:contains(SMA 10) + div");
+		String sma20 = scrapeAAStockElement(doc,"div:contains(SMA 20) + div");
+		String sma50 = scrapeAAStockElement(doc,"div:contains(SMA 50) + div");
+		String sma100 = scrapeAAStockElement(doc,"div:contains(SMA 100) + div");
+		String sma250 = scrapeAAStockElement(doc,"div:contains(SMA 250) + div");
+
+		// Scrape RSI 10,14,20
+		String rsi10 = scrapeAAStockElement(doc,"div:contains(rsi 10) + div");
+		String rsi14 = scrapeAAStockElement(doc,"div:contains(rsi 14) + div");
+		String rsi20 = scrapeAAStockElement(doc,"div:contains(rsi 20) + div");
+
+		// Scrape MACD(8/17), MACD(12/25)
+		String macd8_17 = scrapeAAStockElement(doc,"div:contains(MACD(8/17 Day)) + div");
+		String macd12_25 = scrapeAAStockElement(doc,"div:contains(MACD(12/25 Day)) + div");
+		
+		// Scrape Last Update time
 		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
 		Elements suspension = doc.select("font:contains(Suspension)");
 		String lastUpdate;
@@ -92,12 +188,20 @@ public interface StockScraping{
 			lastUpdate = "Suspension";
 		} else{
 			lastUpdate = lastUpdateTime.get(0).ownText();
-
 		}
+		
 		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, ls, lastUpdate);
+		return new StockScrapedInfo(stockName, cp, posNegBoldForLast,ls, lastUpdate);
 		//return new StockScrapedInfo("abc", 100, 10000, "abc");
 	}
+	
+	public default String scrapeAAStockElement(Document doc, String lookupQuery){
+		Elements elements = doc.select(lookupQuery);
+		System.out.println(lookupQuery + ": " + elements.get(0).ownText());
+		return  elements.get(0).ownText();
+		
+	}
+	
 	
 	public default StockScrapedInfo getStockDataFromYahooFinanceAPI() throws InterruptedException, IOException{
 		String url = "https://query.yahooapis.com/v1/public/yql?q="; 
@@ -111,7 +215,7 @@ public interface StockScraping{
 		System.out.println(doc);
 		//Element content = doc.select("meta[itemprop=price]").first();
 		//double cp =  Double.parseDouble(content.attr("content"));
-		return new StockScrapedInfo("abc", 1000, 100, "abc");
+		return new StockScrapedInfo("abc", 1000,"" ,100,"abc");
 
 		}
 }

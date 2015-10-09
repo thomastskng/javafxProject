@@ -99,20 +99,11 @@
    <left>
       <ScrollPane prefHeight="637.0" prefWidth="225.0" BorderPane.alignment="CENTER">
          <content>
-            <SplitPane dividerPositions="0.3183856502242152, 0.6203288490284006" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
+            <SplitPane dividerPositions="0.5440956651718983" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
               <items>
-                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="239.0" prefWidth="189.0" text="file">
-                    <content>
-                      <AnchorPane prefHeight="198.0" prefWidth="175.0">
-                           <children>
-                              <TreeView fx:id="fxFileTree" prefHeight="221.0" prefWidth="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                           </children></AnchorPane>
-                    </content>
-                  </TitledPane>
-                  <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
-                  <VBox prefHeight="316.0" prefWidth="177.0">
+                  <VBox prefHeight="238.0" prefWidth="205.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="217.0" prefWidth="205.0" text="Stock Info Lookup" underline="true">
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="170.0" prefWidth="205.0" text="Stock Info Lookup" underline="true">
                         <content>
                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
                                  <children>
@@ -148,6 +139,7 @@
                       </TitledPane>
                      </children>
                   </VBox>
+                  <VBox fx:id="fxStockCalculator" alignment="CENTER" minHeight="260.0" prefHeight="452.0" prefWidth="214.0" spacing="10.0" />
               </items>
             </SplitPane>
          </content>
