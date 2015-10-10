@@ -18,6 +18,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.time.LocalDate;
+import javafx.scene.paint.Color;
 import java.io.File;
 import java.io.IOException;
 import java.lang.*;
@@ -79,6 +80,11 @@ import javafx.util.StringConverter;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
+import com.gargoylesoftware.htmlunit.javascript.host.dom.Text;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+
 public class Controller implements Initializable{
 	
 	@FXML
@@ -126,13 +132,15 @@ public class Controller implements Initializable{
     public StockLookUp lookUpTicker;
     
     // Button
+    
+    
 	// Label
-    public Label fxLabel1;
-    public Label fxLabel2;
+    public Label fxStockNameLabel;
+    public Label fxLastLabel;
     public Label fxLabel3;
     public Label fxLabel4;
-    public Label fxLabel5;
-    public Label fxLabel6;
+    public Label fxLotLabel;
+    public Label fxLastUpdateLabel;
 
 
     // Tab pane
@@ -145,8 +153,9 @@ public class Controller implements Initializable{
 	public HBox fxWatchListPanel;
 	// MenuBar
 	public MenuBar fxMenuBar;
-
 	public ComboBox<String> portfolioComboBox;
+	public GridPane gridPane;
+
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
 	private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
@@ -967,6 +976,42 @@ public class Controller implements Initializable{
 		
 	}
 	
+	// initialize Grid Pane
+	public void initializeGridPane(){
+		gridPane = new GridPane();
+		gridPane.setGridLinesVisible(true);
+		gridPane.setPadding(new Insets(3,3,3,3));
+		final int numCols = 5 ;
+        final int numRows = 10 ;
+        for (int i = 0; i < numCols; i++) {
+            ColumnConstraints colConst = new ColumnConstraints();
+            colConst.setPercentWidth(100.0 / numCols);
+            gridPane.getColumnConstraints().add(colConst);
+        }
+        for (int i = 0; i < numRows; i++) {
+            RowConstraints rowConst = new RowConstraints();
+            rowConst.setPercentHeight(100.0 / numRows);
+            gridPane.getRowConstraints().add(rowConst);         
+        }
+        
+        fxStockLookUp.setContent(gridPane);
+        
+        fxStockNameLabel = new Label("Stock Name");
+        fxStockNameLabel.setFont(Font.font("Arial",12));
+        gridPane.add(fxStockNameLabel, 0, 0,7,1);
+        
+
+        fxLastLabel = new Label("Last");
+        fxLastLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxLastLabel.setFont(Font.font("Arial",FontWeight.BOLD ,32));
+        gridPane.add(fxLastLabel, 1, 1,4,3);
+        
+        fxLotLabel = new Label("Lot");
+        //gridPane.add(fxLotLabel, 4, 8);
+        
+        fxLastUpdateLabel = new Label("Last Update");
+        //gridPane.add(fxLastUpdateLabel, 4, 9);
+	}
 
 	
 	// initialise Stock Calculator
@@ -1023,18 +1068,31 @@ public class Controller implements Initializable{
         }));
 
 			
+        Image upImg = new Image(getClass().getResourceAsStream("up.png"), 32,32,false,false);
+        Image downImg = new Image(getClass().getResourceAsStream("down.png"), 32,32,false,false);
+        
+        ImageView upImgView = new ImageView(upImg);
+        ImageView downImgView = new ImageView(downImg);
+
+        
 		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
 			@Override
             public void handle(ActionEvent actionEvent) {
-				fxLabel2.textProperty().unbind();
-				fxLabel5.textProperty().unbind();
+				fxLastLabel.textProperty().unbind();
+				fxLotLabel.textProperty().unbind();
 
 		        Locale locale  = new Locale("en", "UK");
             	lookUpTicker = new StockLookUp(tfStockTicker.getText());
-            	fxLabel1.textProperty().bind(lookUpTicker.stockNameProperty());
-				fxLabel2.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));		
-				fxLabel5.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
-				fxLabel6.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
+            	fxStockNameLabel.textProperty().bind(lookUpTicker.stockNameProperty());
+            	fxLastLabel.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));
+            	fxLastLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(Color.LIME).otherwise(Color.RED)
+						);
+            	fxLastLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(upImgView).otherwise(downImgView)
+            			);
+				fxLotLabel.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
+				fxLastUpdateLabel.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
 				System.out.println("LookUP: " + tfStockTicker.getText());
             	
             }
@@ -1338,6 +1396,7 @@ public class Controller implements Initializable{
 		//fxTransactionLog.getItems().addListener(savedListener);
 		//fxPortfolio.getItems().addListener(savedListener);
 		//fxWatchList.getItems().addListener(savedListener);
+		initializeGridPane();
 		initialiseStockCalculator();
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
@@ -1353,7 +1412,6 @@ public class Controller implements Initializable{
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
 		//new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap, saved, this.primaryStage);
-
 	}
 	
 	

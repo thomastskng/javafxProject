@@ -42,6 +42,7 @@ public class StockLookUp implements StockScraping{
 	
 	private StringProperty stockTicker;
 	private final ReadOnlyDoubleWrapper currentPrice;
+	private final ReadOnlyStringWrapper posNegForLast;
 	private final ReadOnlyDoubleWrapper lotSize;
     private final ReadOnlyStringWrapper stockName;
     private final ReadOnlyStringWrapper lastUpdate;
@@ -79,6 +80,7 @@ public class StockLookUp implements StockScraping{
 		});
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
+		this.posNegForLast = new ReadOnlyStringWrapper("");
 		this.stockName = new ReadOnlyStringWrapper("");
 		this.lotSize = new ReadOnlyDoubleWrapper(0);
 		this.lastUpdate = new ReadOnlyStringWrapper("");
@@ -89,6 +91,15 @@ public class StockLookUp implements StockScraping{
 	    								return (Double) 0.0;
 	    							}
 	    						}, stockService.lastValueProperty()));
+		
+		this.posNegForLast.bind(Bindings.createStringBinding(() -> {
+									if(stockService.getLastValue() != null){
+										return stockService.getLastValue().getPosNegForLast();
+									} else{
+										return "";
+									}
+								}, stockService.lastValueProperty()));
+		
 		this.stockName.bind(Bindings.createStringBinding(() -> {
 									if(stockService.getLastValue() != null){
 										return stockService.getLastValue().getStockName();
@@ -96,6 +107,7 @@ public class StockLookUp implements StockScraping{
 										return "";
 									}
 								}, stockService.lastValueProperty()));
+		
 		this.lastUpdate.bind(Bindings.createStringBinding(() -> {
 			if(stockService.getLastValue() != null){
 				return stockService.getLastValue().getLastUpdate();
@@ -103,13 +115,15 @@ public class StockLookUp implements StockScraping{
 				return "";
 			}
 		}, stockService.lastValueProperty()));
+		
 		this.lotSize.bind(Bindings.createDoubleBinding(() -> {
 			if(stockService.getLastValue() != null){
 				return stockService.getLastValue().getLotSize();
 			} else{
 				return (Double) 0.0;
 			}
-		}, stockService.lastValueProperty()));	
+		}, stockService.lastValueProperty()));
+		
 		startMonitoring();
 	}	
 	
@@ -134,6 +148,14 @@ public class StockLookUp implements StockScraping{
 		return currentPriceProperty().get();
 	}
 	 
+	public ReadOnlyStringProperty posNegForLastProperty(){
+		return this.posNegForLast.getReadOnlyProperty();
+	}
+	
+	public final String getPosNegForLastProperty(){
+		return posNegForLastProperty().get();
+	}
+	
 	public ReadOnlyStringProperty stockNameProperty(){
 		return this.stockName.getReadOnlyProperty();
 	}

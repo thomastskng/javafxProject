@@ -5,15 +5,14 @@ public class StockScrapedInfo {
 	private double currentPrice;
 	private String lastUpdate;
 	private double lotSize;
-	private boolean posNegBoldForLast;
+	private String posNegForLast;
 	
-	public StockScrapedInfo(String stockName, double currentPrice, String posNegBoldForLast, double lotSize,String lastUpdate){
+	public StockScrapedInfo(String stockName, double currentPrice, String posNegForLast, double lotSize,String lastUpdate){
 		this.stockName = stockName;
 		this.currentPrice = currentPrice;
 		this.lotSize = lotSize;
 		this.lastUpdate = lastUpdate;
-		setUpDownForLast(posNegBoldForLast);
-		this.posNegBoldForLast = getUpDownForLast();
+		this.posNegForLast = posNegForLast;
 	}
 	
 	public String getStockName(){
@@ -32,16 +31,12 @@ public class StockScrapedInfo {
 		this.currentPrice = currentPrice;
 	}
 	
-	public boolean getUpDownForLast(){
-		return this.posNegBoldForLast;
+	public String getPosNegForLast(){
+		return this.posNegForLast;
 	}
 	
-	public void setUpDownForLast(String posNegBoldForLast){
-		if(posNegBoldForLast.equals("")){
-			this.posNegBoldForLast = true;
-		} else{
-			this.posNegBoldForLast = false;
-		}
+	public void setPosNegForLast(String posNegForLast){
+		this.posNegForLast = posNegForLast;
 	}
 	
 	public String getLastUpdate(){

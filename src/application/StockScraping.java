@@ -84,19 +84,19 @@ public interface StockScraping{
 		// Scrape current price
 		Elements scrape1 = doc.select("ul:contains(Last) + ul>li>span");
 		// Scrape +ve / -ve indicator of current price
-		String posNegBoldForLast = scrape1.attr("class");
+		String posNegForLast = scrape1.attr("class");
 		double cp = Double.parseDouble(scrape1.get(0).ownText());
 		
 		// Scrape Chg
 		Elements scrape2 = doc.select("ul:contains(Chg) + ul>li>span");
 		System.out.println("Chg: " + scrape2.attr("class") + scrape2.get(0).ownText());
-		String posNegBoldForChg = scrape2.attr("class");
+		String posNegForChg = scrape2.attr("class");
 		String chg = scrape2.get(0).ownText();
 		
 		// Scrape Chg%
 		Elements scrape3 = doc.select("ul:contains(Chg(%)) + ul>li>span");
 		System.out.println("Chg%: " + scrape3.attr("class") + scrape3.get(0).ownText());
-		String posNegBoldForChgPercent = scrape3.attr("class");
+		String posNegForChgPercent = scrape3.attr("class");
 		String chgPercent = scrape3.get(0).ownText();
 		
 		// Scrape Stock Name
@@ -191,7 +191,7 @@ public interface StockScraping{
 		}
 		
 		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, posNegBoldForLast,ls, lastUpdate);
+		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate);
 		//return new StockScrapedInfo("abc", 100, 10000, "abc");
 	}
 	

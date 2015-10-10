@@ -101,42 +101,9 @@
          <content>
             <SplitPane dividerPositions="0.5440956651718983" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
               <items>
-                  <VBox prefHeight="238.0" prefWidth="205.0">
+                  <VBox fx:id="fxVBox" prefHeight="238.0" prefWidth="205.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="170.0" prefWidth="205.0" text="Stock Info Lookup" underline="true">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
-                                 <children>
-                                    <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="71.0" prefHeight="99.0" prefWidth="112.0" text="Last">
-                                       <font>
-                                          <Font name="System Bold" size="24.0" />
-                                       </font>
-                                    </Label>
-                                    <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="186.0" text="Name (Ticker)">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label fx:id="fxLabel5" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="62.0" layoutY="76.0" prefHeight="25.0" prefWidth="131.0" text="Lot Size">
-                                       <font>
-                                          <Font size="11.0" />
-                                       </font>
-                                       <padding>
-                                          <Insets right="2.5" />
-                                       </padding>
-                                    </Label>
-                                    <Label fx:id="fxLabel6" alignment="TOP_RIGHT" layoutX="24.0" layoutY="101.0" prefHeight="27.0" prefWidth="179.0" text="Last Update" AnchorPane.rightAnchor="0.0">
-                                       <font>
-                                          <Font size="10.0" />
-                                       </font>
-                                       <padding>
-                                          <Insets right="2.5" />
-                                       </padding>
-                                    </Label>
-                                 </children>
-                              </AnchorPane>
-                        </content>
-                      </TitledPane>
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="184.0" prefWidth="205.0" text="Stock Info Lookup" underline="true" />
                      </children>
                   </VBox>
                   <VBox fx:id="fxStockCalculator" alignment="CENTER" minHeight="260.0" prefHeight="452.0" prefWidth="214.0" spacing="10.0" />
