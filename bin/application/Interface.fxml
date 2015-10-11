@@ -17,33 +17,7 @@
    <center>
       <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="671.0" prefWidth="1102.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
         <items>
-            <TabPane fx:id="fxTabPaneUpper" prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;">
-              <tabs>
-                <Tab closable="false" text="Portfolio">
-                     <content>
-                        <TableView fx:id="fxPortfolio" editable="true" prefHeight="235.0" prefWidth="783.0" style="-fx-background-color: grey; -fx-control-inner-background: #3D3D3D; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%); -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-border-color: skyblue; -fx-table-cell-border-color: transparent; -fx-table-header-border-color: yellow; -fx-table-header-color: yellow; -fx-table-column-header-background: yellow;" tableMenuButtonVisible="true">
-                          <columns>
-                              <TableColumn fx:id="fxPortfolioStockName" prefWidth="123.0" text="Stock Name" />
-                            <TableColumn fx:id="fxPortfolioTicker" minWidth="50.0" prefWidth="68.0" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-table-column-header-background: yellow; -fx-table-header-color: yellow;" text="Ticker" />
-                            <TableColumn fx:id="fxPortfolioAvgPrice" editable="false" minWidth="65.0" prefWidth="74.0" text="Avg Price" />
-                              <TableColumn fx:id="fxPortfolioVolumeHeld" minWidth="77.0" prefWidth="94.0" text="Volume Held" />
-                              <TableColumn fx:id="fxPortfolioVolumeSold" minWidth="69.0" prefWidth="90.0" text="Volume Sold" />
-                              <TableColumn fx:id="fxPortfolioTarget" minWidth="39.0" prefWidth="61.0" text="Target" />
-                              <TableColumn fx:id="fxPortfolioStopLoss" minWidth="48.0" prefWidth="72.0" text="Stop Loss" />
-                              <TableColumn fx:id="fxPortfolioCurrentPrice" minWidth="67.0" prefWidth="92.0" text="Current Price" />
-                              <TableColumn fx:id="fxPortfolioUPnL" maxWidth="105.0" minWidth="35.0" prefWidth="60.0" text="uPnL" />
-                              <TableColumn fx:id="fxPortfolioPnL" maxWidth="143.0" minWidth="35.0" prefWidth="56.0" text="PnL" />
-                              <TableColumn fx:id="fxPortfolioPosition" minWidth="39.0" prefWidth="69.0" text="Position" />
-                              <TableColumn fx:id="fxPortfolioPnLHistory" minWidth="80.0" prefWidth="108.0" text="PnL History" />
-                          </columns>
-                           <effect>
-                              <Bloom threshold="0.94" />
-                           </effect>
-                        </TableView>
-                     </content>
-                  </Tab>
-              </tabs>
-            </TabPane>
+            <TabPane fx:id="fxTabPaneUpper" prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;" />
             <TabPane fx:id="fxTabPaneLower" prefHeight="280.0" prefWidth="868.0" rotateGraphic="true">
               <tabs>
                 <Tab closable="false" text="Transaction Log">

@@ -289,7 +289,7 @@ public class Portfolio implements Serializable{
 				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,this.ctTickerTargetMap.get(entry.getKey()), this.ctTickerStopLossMap.get(entry.getKey()), portfolioName));
 
 			} else{
-				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,0,0,portfolioName));
+				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,1000,0,portfolioName));
 			}
 		}
 		//return consolidatedTrades;

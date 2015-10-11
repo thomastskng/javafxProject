@@ -11,6 +11,8 @@ import javafx.fxml.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.application.Application;
+import javafx.application.Platform;
+
 import java.net.URL;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -106,21 +108,7 @@ public class Controller implements Initializable{
 	
 	// Consolidated Trades
 	public TabPane fxTabPaneUpper;
-	/*
-	public TableView<ConsolidatedTrade> fxPortfolio;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioTicker;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioAvgPrice;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioVolumeHeld;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioVolumeSold;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioTarget;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioStopLoss;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioCurrentPrice;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioUPnL;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioPnL;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioPosition;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioPnLHistory;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioStockName;
-	*/
+
 
 	// WatchList
 	public TableView<WatchListStock> fxWatchList;
@@ -390,7 +378,16 @@ public class Controller implements Initializable{
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
 		observableListOfTrades.addAll(
-				new Trade("Buy", LocalDate.now().plusDays(3),"1",50,5,"portfolio")
+				new Trade("Buy", LocalDate.now().minusDays(100),"1113",13680,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"1",13680,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"293",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"4",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"1972",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"5",23183,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"3",91310,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"941",20000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"533",10000,0,"abc")
+
 				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
 				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
@@ -695,33 +692,7 @@ public class Controller implements Initializable{
 		
 		fxPortfolio.setItems(sortedTrades);
 		*/
-		/*
-		// define setCellValueFactory
-		fxPortfolioTicker.setCellValueFactory(cellData -> cellData.getValue().stockTickerProperty());
-		fxPortfolioAvgPrice.setCellValueFactory(cellData -> cellData.getValue().avgPriceProperty());
-		fxPortfolioVolumeHeld.setCellValueFactory(cellData -> cellData.getValue().volumeHeldProperty());
-		fxPortfolioVolumeSold.setCellValueFactory(cellData -> cellData.getValue().volumeSoldProperty());
-		fxPortfolioTarget.setCellValueFactory(cellData -> cellData.getValue().targetProperty());
-		fxPortfolioStopLoss.setCellValueFactory(cellData -> cellData.getValue().stopLossProperty());
-		fxPortfolioCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
-		fxPortfolioUPnL.setCellValueFactory(cellData -> cellData.getValue().uPnlProperty());
-		fxPortfolioPnL.setCellValueFactory(cellData -> cellData.getValue().pnlProperty());
-		fxPortfolioPosition.setCellValueFactory(cellData -> cellData.getValue().positionProperty());
-		fxPortfolioPnLHistory.setCellValueFactory(new PropertyValueFactory<ConsolidatedTrade,String>("pnl_i"));
-		fxPortfolioStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
-		// define setCellFactory
-		fxPortfolioAvgPrice.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioVolumeHeld.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioVolumeSold.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioTarget.setCellFactory(col -> new EditingNumberCell<ConsolidatedTrade>("target-cell"));
-		fxPortfolioStopLoss.setCellFactory(col -> new EditingNumberCell<ConsolidatedTrade>("stopLoss-cell"));
-		//fxPortfolioCurrentPrice.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioUPnL.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>("uPnl-cell"));
-		fxPortfolioPnL.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>("pnl-cell"));
-		fxPortfolioPnLHistory.setCellFactory(TextFieldTableCell.forTableColumn());
-		//fxPortfolioPosition.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioTicker.setCellFactory(col -> new NonEditableStockTickerCell<ConsolidatedTrade>());
-		*/
+
 		
 		/*****************************************************
 		 *	Table row highlighting for newly added trade
@@ -799,7 +770,7 @@ public class Controller implements Initializable{
         
 		ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
 		ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
-		
+		/*
 		for (Map.Entry<String, Double> entry : ctTickerTargetMap.entrySet())
 		{
 		    System.out.println("Target HashMap: " + entry.getKey() + "/" + entry.getValue());
@@ -808,7 +779,7 @@ public class Controller implements Initializable{
 		{
 		    System.out.println("StopLoss HashMap: " + entry.getKey() + "/" + entry.getValue());
 		}
-		
+		*/
 		/*
 		System.out.println("***************");
 		//initialPortfolio.displayDataStructure();
@@ -818,13 +789,14 @@ public class Controller implements Initializable{
 			System.out.println( "Change: " + ttt);
 		}
 		*/
+
         removeEmptyTabs();
 	}
 
 	// initialise fxWatchList 
 	public void initializeFxWatchList(){	
 		observableListOfWatchListStocks.addAll(
-				new WatchListStock("Last >= Target","1",23.0)
+				new WatchListStock("Last >= Target","1",123.0)
 		);
 		
 		fxWatchList.setItems(observableListOfWatchListStocks);
@@ -1573,10 +1545,14 @@ public class Controller implements Initializable{
 	}
 	
 	public void removeEmptyTabs(){
-		for(Tab tab : fxTabPaneUpper.getTabs()){
-			TableView<ConsolidatedTrade> tableView = (TableView<ConsolidatedTrade>) tab.getContent();
-			if(tableView.getItems().size() <= 0){
-				fxTabPaneUpper.getTabs().remove(tab);
+		for(ListIterator<Tab> iterator = fxTabPaneUpper.getTabs().listIterator(); iterator.hasNext(); ){
+			Tab tab = iterator.next();
+			if(tab!=null){
+				TableView<ConsolidatedTrade> tableView = (TableView<ConsolidatedTrade>) tab.getContent();
+				if(tableView.getItems().size() <= 0){
+					//fxTabPaneUpper.getTabs().remove(tab);
+					iterator.remove();
+				}
 			}
 		}
 		

@@ -89,13 +89,11 @@ public interface StockScraping{
 		
 		// Scrape Chg
 		Elements scrape2 = doc.select("ul:contains(Chg) + ul>li>span");
-		System.out.println("Chg: " + scrape2.attr("class") + scrape2.get(0).ownText());
 		String posNegForChg = scrape2.attr("class");
 		String chg = scrape2.get(0).ownText();
 		
 		// Scrape Chg%
 		Elements scrape3 = doc.select("ul:contains(Chg(%)) + ul>li>span");
-		System.out.println("Chg%: " + scrape3.attr("class") + scrape3.get(0).ownText());
 		String posNegForChgPercent = scrape3.attr("class");
 		String chgPercent = scrape3.get(0).ownText();
 		
@@ -190,14 +188,14 @@ public interface StockScraping{
 			lastUpdate = lastUpdateTime.get(0).ownText();
 		}
 		
-		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
+		//System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
 		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps);
 		//return new StockScrapedInfo("abc", 100, 10000, "abc");
 	}
 	
 	public default String scrapeAAStockElement(Document doc, String lookupQuery){
 		Elements elements = doc.select(lookupQuery);
-		System.out.println(lookupQuery + ": " + elements.get(0).ownText());
+		//System.out.println(lookupQuery + ": " + elements.get(0).ownText());
 		return  elements.get(0).ownText();
 		
 	}
