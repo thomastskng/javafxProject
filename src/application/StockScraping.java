@@ -24,7 +24,7 @@ public interface StockScraping{
 		//System.out.println(doc);
 		Element content = doc.select("meta[itemprop=price]").first();
 		double cp =  Double.parseDouble(content.attr("content"));
-		return new StockScrapedInfo("abc", cp,"", 100, "abc");
+		return new StockScrapedInfo("abc", cp,"", 100, "abc","","","","","","","","","","","","");
 
 		}
 	
@@ -191,7 +191,7 @@ public interface StockScraping{
 		}
 		
 		System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate);
+		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps);
 		//return new StockScrapedInfo("abc", 100, 10000, "abc");
 	}
 	
@@ -215,7 +215,7 @@ public interface StockScraping{
 		System.out.println(doc);
 		//Element content = doc.select("meta[itemprop=price]").first();
 		//double cp =  Double.parseDouble(content.attr("content"));
-		return new StockScrapedInfo("abc", 1000,"" ,100,"abc");
+		return new StockScrapedInfo("abc", 1000,"" ,100,"abc","","","","","","","","","","","","");
 
 		}
 }

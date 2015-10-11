@@ -25,6 +25,7 @@ import java.lang.*;
 import javafx.scene.control.cell.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.collections.*;
 import javafx.scene.control.MultipleSelectionModel.*;
 import javafx.scene.control.SelectionModel.*;
@@ -84,6 +85,7 @@ import com.gargoylesoftware.htmlunit.javascript.host.dom.Text;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 
 public class Controller implements Initializable{
 	
@@ -132,16 +134,26 @@ public class Controller implements Initializable{
     public StockLookUp lookUpTicker;
     
     // Button
-    
+    public MoreInfoDisplayBox midb;
+
     
 	// Label
     public Label fxStockNameLabel;
     public Label fxLastLabel;
+    public Label labelLotVal;
+    public Label fxLastUpdateLabel;
+    public Label fxChgLabel;
+    public Label fxChgPercentLabel;
+    public Label labelSpreadVal;
+    public Label labelPeRatioVal;
+    public Label labelYieldVal;
+    public Label labelDividendPayoutVal;
+    public Label labelEpsVal;
+    public Label labelMarketCapVal;
+    public Label labelNavVal;
+    public Label labelDpsVal;
     public Label fxLabel3;
     public Label fxLabel4;
-    public Label fxLotLabel;
-    public Label fxLastUpdateLabel;
-
 
     // Tab pane
     public TabPane fxTabPaneLower;
@@ -979,38 +991,184 @@ public class Controller implements Initializable{
 	// initialize Grid Pane
 	public void initializeGridPane(){
 		gridPane = new GridPane();
-		gridPane.setGridLinesVisible(true);
-		gridPane.setPadding(new Insets(3,3,3,3));
-		final int numCols = 5 ;
-        final int numRows = 10 ;
-        for (int i = 0; i < numCols; i++) {
-            ColumnConstraints colConst = new ColumnConstraints();
-            colConst.setPercentWidth(100.0 / numCols);
-            gridPane.getColumnConstraints().add(colConst);
-        }
-        for (int i = 0; i < numRows; i++) {
-            RowConstraints rowConst = new RowConstraints();
-            rowConst.setPercentHeight(100.0 / numRows);
-            gridPane.getRowConstraints().add(rowConst);         
-        }
-        
-        fxStockLookUp.setContent(gridPane);
-        
-        fxStockNameLabel = new Label("Stock Name");
-        fxStockNameLabel.setFont(Font.font("Arial",12));
-        gridPane.add(fxStockNameLabel, 0, 0,7,1);
-        
+		//gridPane.setGridLinesVisible(true);
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
+		gridPane.setPadding(new Insets(5,5,5,5));
 
+        fxStockLookUp.setContent(gridPane);
+        ColumnConstraints col0 = new ColumnConstraints(20,45,70);
+        RowConstraints row0 = new RowConstraints(12,17,22);
+        RowConstraints row1 = new RowConstraints(18,24,28);
+        RowConstraints row2 = new RowConstraints(14,19,24);
+        RowConstraints row3 = new RowConstraints(7,12,17);
+        RowConstraints row4 = new RowConstraints(11,11,13);
+
+        gridPane.getColumnConstraints().add(0,col0);
+        gridPane.getColumnConstraints().add(1,col0);
+        gridPane.getColumnConstraints().add(2,col0);
+        gridPane.getColumnConstraints().add(3,col0);
+        gridPane.getRowConstraints().add(0,row0);
+        gridPane.getRowConstraints().add(1,row1);
+        gridPane.getRowConstraints().add(2,row2);
+        gridPane.getRowConstraints().add(3,row3);
+        gridPane.getRowConstraints().add(4,row4);
+        gridPane.getRowConstraints().add(5,row4);
+        gridPane.getRowConstraints().add(6,row4);
+        gridPane.getRowConstraints().add(7,row4);
+        gridPane.getRowConstraints().add(8,row4);
+        gridPane.getRowConstraints().add(9,row4);
+        gridPane.getRowConstraints().add(10,row4);
+        gridPane.getRowConstraints().add(11,row4);
+        gridPane.getRowConstraints().add(12,row4);
+        gridPane.getRowConstraints().add(13,row4);
+        gridPane.getRowConstraints().add(14,row4);
+        gridPane.getRowConstraints().add(15,row4);
+
+
+        
+        // Stock Name
+        fxStockNameLabel = new Label("Stock Name");
+        fxStockNameLabel.setFont(Font.font("Arial",FontWeight.BOLD,17));
+        gridPane.add(fxStockNameLabel, 0, 0,4,1);
+        
+        // Last
         fxLastLabel = new Label("Last");
         fxLastLabel.setContentDisplay(ContentDisplay.LEFT);
         fxLastLabel.setFont(Font.font("Arial",FontWeight.BOLD ,32));
-        gridPane.add(fxLastLabel, 1, 1,4,3);
+        gridPane.add(fxLastLabel, 0, 1,4,1);
+        GridPane.setHalignment(fxLastLabel, HPos.RIGHT);
         
-        fxLotLabel = new Label("Lot");
-        //gridPane.add(fxLotLabel, 4, 8);
-        
+        // Chg
+        fxChgLabel = new Label("Chg /");
+        fxChgLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxChgLabel.setFont(Font.font("Arial",FontWeight.BOLD ,14));
+        gridPane.add(fxChgLabel, 1, 2,2,1);
+        GridPane.setHalignment(fxChgLabel, HPos.LEFT);
+
+        // Chg %
+        fxChgPercentLabel = new Label("Chg %");
+        fxChgPercentLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxChgPercentLabel.setFont(Font.font("Arial",FontWeight.BOLD ,14));
+        gridPane.add(fxChgPercentLabel, 2, 2,2,1);
+        GridPane.setHalignment(fxChgPercentLabel, HPos.RIGHT);
+               
+        // Last Update
         fxLastUpdateLabel = new Label("Last Update");
-        //gridPane.add(fxLastUpdateLabel, 4, 9);
+        fxLastUpdateLabel.setFont(Font.font("Arial", 12));
+        gridPane.add(fxLastUpdateLabel, 0, 3,4,1);
+        GridPane.setHalignment(fxLastUpdateLabel, HPos.RIGHT);
+
+        // Lot       
+        Label labelLotText = new Label("Lot Size");
+        labelLotText.setFont(Font.font("Arial",13));
+        labelLotText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelLotText, 0, 4,2,1);
+        GridPane.setHalignment(labelLotText, HPos.LEFT);
+        labelLotVal = new Label("");
+        labelLotVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelLotVal, 2,4,2,1);
+        GridPane.setHalignment(labelLotVal,HPos.RIGHT);
+
+        // Spread       
+        Label labelSpreadText = new Label("Spread");
+        labelSpreadText.setFont(Font.font("Arial",13));
+        labelSpreadText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelSpreadText, 0, 5,2,1);
+        GridPane.setHalignment(labelSpreadText, HPos.LEFT);
+        labelSpreadVal = new Label("");
+        labelSpreadVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelSpreadVal, 2,5,2,1);
+        GridPane.setHalignment(labelSpreadVal,HPos.RIGHT);
+
+        // PE Ratio       
+        Label labelPeRatioText = new Label("P/E Ratio");
+        labelPeRatioText.setFont(Font.font("Arial",13));
+        labelPeRatioText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelPeRatioText, 0, 6,2,1);
+        GridPane.setHalignment(labelPeRatioText, HPos.LEFT);
+        labelPeRatioVal = new Label("");
+        labelPeRatioVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelPeRatioVal, 2,6,2,1);
+        GridPane.setHalignment(labelPeRatioVal,HPos.RIGHT);
+
+        // Yield       
+        Label labelYieldText = new Label("Yield");
+        labelYieldText.setFont(Font.font("Arial",13));
+        labelYieldText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelYieldText, 0, 7,2,1);
+        GridPane.setHalignment(labelYieldText, HPos.LEFT);
+        labelYieldVal = new Label("");
+        labelYieldVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelYieldVal, 2,7,2,1);
+        GridPane.setHalignment(labelYieldVal,HPos.RIGHT);
+
+        // Dividend Payout       
+        Label labelDividendPayoutText = new Label("Dividend Payout");
+        labelDividendPayoutText.setFont(Font.font("Arial",13));
+        labelDividendPayoutText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelDividendPayoutText, 0, 8,3,1);
+        GridPane.setHalignment(labelDividendPayoutText, HPos.LEFT);
+        labelDividendPayoutVal = new Label("");
+        labelDividendPayoutVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelDividendPayoutVal, 2,8,2,1);
+        GridPane.setHalignment(labelDividendPayoutVal,HPos.RIGHT);
+
+        // EPS       
+        Label labelEpsText = new Label("Earnings Per Share");
+        labelEpsText.setFont(Font.font("Arial",13));
+        labelEpsText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelEpsText, 0, 9,3,1);
+        GridPane.setHalignment(labelEpsText, HPos.LEFT);
+        labelEpsVal = new Label("");
+        labelEpsVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelEpsVal, 2,9,2,1);
+        GridPane.setHalignment(labelEpsVal,HPos.RIGHT);
+        
+        // Market Cap       
+        Label labelMarketCapText = new Label("Market Cap");
+        labelMarketCapText.setFont(Font.font("Arial",13));
+        labelMarketCapText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelMarketCapText, 0, 10,2,1);
+        GridPane.setHalignment(labelMarketCapText, HPos.LEFT);
+        labelMarketCapVal = new Label("");
+        labelMarketCapVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelMarketCapVal, 2,10,2,1);
+        GridPane.setHalignment(labelMarketCapVal,HPos.RIGHT);
+        
+        // NAV       
+        Label labelNavText = new Label("NAV");
+        labelNavText.setFont(Font.font("Arial",13));
+        labelNavText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelNavText, 0, 11,2,1);
+        GridPane.setHalignment(labelNavText, HPos.LEFT);
+        labelNavVal = new Label("");
+        labelNavVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelNavVal, 2,11,2,1);
+        GridPane.setHalignment(labelNavVal,HPos.RIGHT);
+        
+        // DPS   
+        Label labelDpsText = new Label("Dividend/share");
+        labelDpsText.setFont(Font.font("Arial",13));
+        labelDpsText.setTextFill(Color.DIMGRAY);
+        gridPane.add(labelDpsText, 0, 12,3,1);
+        GridPane.setHalignment(labelDpsText, HPos.LEFT);
+        labelDpsVal = new Label("");
+        labelDpsVal.setFont(Font.font("Arial",13));
+        gridPane.add(labelDpsVal, 2,12,2,1);
+        GridPane.setHalignment(labelDpsVal,HPos.RIGHT);
+        
+        Button moreInfo = new Button("More Info");
+        gridPane.add(moreInfo, 0, 14,4,1);
+        GridPane.setHalignment(moreInfo,HPos.CENTER);
+        moreInfo.setOnAction(e -> {
+        	if(midb!=null){
+        		midb.window.requestFocus();
+        	} else{
+        		midb = new MoreInfoDisplayBox();
+        	}
+        });
+        
 	}
 
 	
@@ -1033,13 +1191,6 @@ public class Controller implements Initializable{
 		portfolioComboBox.setEditable(true);
 		Label labelPortfolio = new Label ("Portfolio");
 		portfolioComboBox.setPrefWidth(130);
-		
-		//(e-> {
-		//	for(Trade t: observableListOfTrades){
-		//		System.out.println("ComboBox: " + portfolioComboBox.getSelectionModel().getSelectedItem().toString() + " : " + fxTransactionLogStockName.getCellObservableValue(t));
-		//	}
-		//});
-		
 		
 		// capture user input: StockTicker, volume, price 
 		// Stock Ticker
@@ -1068,34 +1219,77 @@ public class Controller implements Initializable{
         }));
 
 			
-        Image upImg = new Image(getClass().getResourceAsStream("up.png"), 32,32,false,false);
-        Image downImg = new Image(getClass().getResourceAsStream("down.png"), 32,32,false,false);
-        
+        Image upImg = new Image(getClass().getResourceAsStream("up.png"), 30,30,false,false);
+        Image downImg = new Image(getClass().getResourceAsStream("down.png"), 30,30,false,false);
+        Image upImgChg = new Image(getClass().getResourceAsStream("up.png"), 14,14,false,false);
+        Image downImgChg = new Image(getClass().getResourceAsStream("down.png"), 14,14,false,false);
+        Image upImgChgPercent = new Image(getClass().getResourceAsStream("up.png"), 14,14,false,false);
+        Image downImgChgPercent = new Image(getClass().getResourceAsStream("down.png"), 14,14,false,false);
+
         ImageView upImgView = new ImageView(upImg);
         ImageView downImgView = new ImageView(downImg);
+        ImageView upImgViewChg = new ImageView(upImgChg);
+        ImageView downImgViewChg = new ImageView(downImgChg);
+        ImageView upImgViewChgPercent = new ImageView(upImgChgPercent);
+        ImageView downImgViewChgPercent = new ImageView(downImgChgPercent);
 
+        
         
 		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
 			@Override
             public void handle(ActionEvent actionEvent) {
 				fxLastLabel.textProperty().unbind();
-				fxLotLabel.textProperty().unbind();
+				labelLotVal.textProperty().unbind();
 
 		        Locale locale  = new Locale("en", "UK");
+		        // Create stock ticker look up object
             	lookUpTicker = new StockLookUp(tfStockTicker.getText());
+            	// stock name
             	fxStockNameLabel.textProperty().bind(lookUpTicker.stockNameProperty());
+            	// Last
             	fxLastLabel.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));
             	fxLastLabel.textFillProperty().bind(
-						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(Color.LIME).otherwise(Color.RED)
+						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY)  )
 						);
             	fxLastLabel.graphicProperty().bind(
-            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(upImgView).otherwise(downImgView)
+            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(upImgView).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg bold")).then(downImgView).otherwise(new ImageView(new WritableImage(3,3)))  )
             			);
-				fxLotLabel.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
+            	// Chg
+            	fxChgLabel.textProperty().bind(Bindings.concat(lookUpTicker.chgProperty()).concat(" / "));
+            	fxChgLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY))
+						);
+            	fxChgLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos bold")).then(upImgViewChg).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg bold")).then(downImgViewChg).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			);
+            	// Chg %
+            	fxChgPercentLabel.textProperty().bind(lookUpTicker.chgPercentProperty());
+            	fxChgPercentLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY)  )
+						);
+            	fxChgPercentLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos bold")).then(upImgViewChgPercent).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg bold")).then(downImgViewChgPercent).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			);
+        		// Last Update
 				fxLastUpdateLabel.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
-				System.out.println("LookUP: " + tfStockTicker.getText());
-            	
-            }
+				System.out.println("LookUP: " + tfStockTicker.getText());		
+				// Lot
+				labelLotVal.textProperty().bind(Bindings.format(locale,"%,.0f",lookUpTicker.lotSizeProperty()));
+				labelSpreadVal.textProperty().bind(lookUpTicker.spreadProperty());
+				labelPeRatioVal.textProperty().bind(lookUpTicker.peRatioProperty());
+				labelYieldVal.textProperty().bind(lookUpTicker.yieldProperty());
+				labelDividendPayoutVal.textProperty().bind(lookUpTicker.dividendPayoutProperty());
+				labelEpsVal.textProperty().bind(lookUpTicker.epsProperty());
+				labelMarketCapVal.textProperty().bind(lookUpTicker.marketCapProperty());
+				labelNavVal.textProperty().bind(lookUpTicker.navProperty());
+				labelDpsVal.textProperty().bind(lookUpTicker.dpsProperty());
+			}
         }));
 			
 		tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{

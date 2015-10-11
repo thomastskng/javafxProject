@@ -46,6 +46,20 @@ public class StockLookUp implements StockScraping{
 	private final ReadOnlyDoubleWrapper lotSize;
     private final ReadOnlyStringWrapper stockName;
     private final ReadOnlyStringWrapper lastUpdate;
+    private final ReadOnlyStringWrapper chg;
+    private final ReadOnlyStringWrapper chgPercent;
+    private final ReadOnlyStringWrapper posNegForChg;
+    private final ReadOnlyStringWrapper posNegForChgPercent;
+    private final ReadOnlyStringWrapper spread;
+    private final ReadOnlyStringWrapper peRatio;
+    private final ReadOnlyStringWrapper yield;
+    private final ReadOnlyStringWrapper dividendPayout;
+    private final ReadOnlyStringWrapper eps;
+    private final ReadOnlyStringWrapper marketCap;
+    private final ReadOnlyStringWrapper nav;
+    private final ReadOnlyStringWrapper dps;
+
+    
 	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
 	    public Task<StockScrapedInfo> createTask(){
@@ -84,6 +98,20 @@ public class StockLookUp implements StockScraping{
 		this.stockName = new ReadOnlyStringWrapper("");
 		this.lotSize = new ReadOnlyDoubleWrapper(0);
 		this.lastUpdate = new ReadOnlyStringWrapper("");
+		this.chg = new ReadOnlyStringWrapper("");
+		this.posNegForChg = new ReadOnlyStringWrapper("");
+		this.chgPercent = new ReadOnlyStringWrapper("");
+		this.posNegForChgPercent = new ReadOnlyStringWrapper("");
+		this.spread = new ReadOnlyStringWrapper("");
+		this.peRatio = new ReadOnlyStringWrapper("");
+		this.yield = new ReadOnlyStringWrapper("");
+		this.dividendPayout = new ReadOnlyStringWrapper("");
+		this.eps = new ReadOnlyStringWrapper("");
+		this.marketCap = new ReadOnlyStringWrapper("");
+		this.nav = new ReadOnlyStringWrapper("");
+		this.dps = new ReadOnlyStringWrapper("");
+
+		// last
 		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
 	    							if(stockService.getLastValue() != null){
 	    								return stockService.getLastValue().getCurrentPrice();
@@ -91,7 +119,7 @@ public class StockLookUp implements StockScraping{
 	    								return (Double) 0.0;
 	    							}
 	    						}, stockService.lastValueProperty()));
-		
+		// Up / Down Last
 		this.posNegForLast.bind(Bindings.createStringBinding(() -> {
 									if(stockService.getLastValue() != null){
 										return stockService.getLastValue().getPosNegForLast();
@@ -99,7 +127,7 @@ public class StockLookUp implements StockScraping{
 										return "";
 									}
 								}, stockService.lastValueProperty()));
-		
+		// stock name
 		this.stockName.bind(Bindings.createStringBinding(() -> {
 									if(stockService.getLastValue() != null){
 										return stockService.getLastValue().getStockName();
@@ -108,6 +136,7 @@ public class StockLookUp implements StockScraping{
 									}
 								}, stockService.lastValueProperty()));
 		
+		// Last Update
 		this.lastUpdate.bind(Bindings.createStringBinding(() -> {
 			if(stockService.getLastValue() != null){
 				return stockService.getLastValue().getLastUpdate();
@@ -116,11 +145,110 @@ public class StockLookUp implements StockScraping{
 			}
 		}, stockService.lastValueProperty()));
 		
+		// lot size
 		this.lotSize.bind(Bindings.createDoubleBinding(() -> {
 			if(stockService.getLastValue() != null){
 				return stockService.getLastValue().getLotSize();
 			} else{
 				return (Double) 0.0;
+			}
+		}, stockService.lastValueProperty()));
+		
+		// Chg
+		this.chg.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getChg();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		
+		// Up / Down Chg
+		this.posNegForChg.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getPosNegForChg();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Chg %
+		this.chgPercent.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getChgPercent();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Up / Down Chg %
+		this.posNegForChgPercent.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getPosNegForChgPercent();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Spread
+		this.spread.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getSpread();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// PE Ratio
+		this.peRatio.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getPeRatio();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Yield
+		this.yield.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getYield();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Dividend Payout
+		this.dividendPayout.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getDividendPayout();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// EPS
+		this.eps.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getEps();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// Market Cap
+		this.marketCap.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getMarketCap();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// nav
+		this.nav.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getNav();
+			} else{
+				return "";
+			}
+		}, stockService.lastValueProperty()));
+		// DPS
+		this.dps.bind(Bindings.createStringBinding(() -> {
+			if(stockService.getLastValue() != null){
+				return stockService.getLastValue().getDps();
+			} else{
+				return "";
 			}
 		}, stockService.lastValueProperty()));
 		
@@ -179,6 +307,103 @@ public class StockLookUp implements StockScraping{
 	public String getLastUpdate(){
 		return lastUpdateProperty().get();
 	}
+		
+	public ReadOnlyStringProperty chgProperty(){
+		return this.chg.getReadOnlyProperty();
+	}
+	
+	public String getChg(){
+		return chgProperty().get();
+	}
+	
+	public ReadOnlyStringProperty posNegForChgProperty(){
+		return this.posNegForChg.getReadOnlyProperty();
+	}
+	
+	public String getPosNegForChg(){
+		return this.posNegForChgProperty().get();
+	}
+	
+	public ReadOnlyStringProperty chgPercentProperty(){
+		return this.chgPercent.getReadOnlyProperty();
+	}
+	
+	public String getChgPercent(){
+		return this.chgPercentProperty().get();
+	}
+	
+	public ReadOnlyStringProperty posNegForChgPercentProperty(){
+		return this.posNegForChgPercent.getReadOnlyProperty();
+	}
+	
+	public String getPosNegForChgPercent(){
+		return posNegForChgPercentProperty().get();
+	}
+	
+	public ReadOnlyStringProperty spreadProperty(){
+		return this.spread.getReadOnlyProperty();
+	}
+	
+	public String getSpread(){
+		return this.spreadProperty().get();
+	}
+	
+	public ReadOnlyStringProperty peRatioProperty(){
+		return this.peRatio.getReadOnlyProperty();
+	}
+	
+	public String getPeRatio(){
+		return this.peRatioProperty().get();
+	}
+	
+	public ReadOnlyStringProperty yieldProperty(){
+		return this.yield.getReadOnlyProperty();
+	}
+	
+	public String getYield(){
+		return this.yieldProperty().get();
+	}
+	
+	public ReadOnlyStringProperty dividendPayoutProperty(){
+		return this.dividendPayout.getReadOnlyProperty();
+	}
+	
+	public String getDividendPayout(){
+		return this.dividendPayoutProperty().get();
+	}
+	
+	public ReadOnlyStringProperty epsProperty(){
+		return this.eps.getReadOnlyProperty();
+	}
+	
+	public String getEps(){
+		return this.epsProperty().get();
+	}
+	
+	public ReadOnlyStringProperty marketCapProperty(){
+		return this.marketCap.getReadOnlyProperty();
+	}
+	
+	public String getMarketCap(){
+		return this.marketCapProperty().get();
+	}
+	
+	public ReadOnlyStringProperty navProperty(){
+		return this.nav.getReadOnlyProperty();
+	}
+	
+	public String getNav(){
+		return this.navProperty().get();
+	}
+	
+	public ReadOnlyStringProperty dpsProperty(){
+		return this.dps.getReadOnlyProperty();
+	}
+	
+	public String getDps(){
+		return this.dpsProperty().get();
+	}
+	
 	
 	// multi-threading
 	public final void startMonitoring() {

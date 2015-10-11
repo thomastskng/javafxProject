@@ -103,10 +103,10 @@
               <items>
                   <VBox fx:id="fxVBox" prefHeight="238.0" prefWidth="205.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="184.0" prefWidth="205.0" text="Stock Info Lookup" underline="true" />
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="413.0" prefWidth="205.0" text="Stock Info Lookup" underline="true" />
                      </children>
                   </VBox>
-                  <VBox fx:id="fxStockCalculator" alignment="CENTER" minHeight="260.0" prefHeight="452.0" prefWidth="214.0" spacing="10.0" />
+                  <VBox fx:id="fxStockCalculator" alignment="CENTER" maxHeight="250.0" minHeight="250.0" prefHeight="225.0" prefWidth="214.0" spacing="10.0" />
               </items>
             </SplitPane>
          </content>
