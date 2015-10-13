@@ -17,7 +17,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public interface StockScraping{
 	
-	
+	/*
 	public default StockScrapedInfo getDataFromGoogleFinance(String ticker) throws InterruptedException, IOException{
 		String url = "https://www.google.com.hk/finance?q=" + String.format("%04d", Integer.parseInt(ticker)) + "&ei=yF14VYC4F4Wd0ASb64CoCw";
 		Document doc = Jsoup.connect(url).get();
@@ -26,8 +26,8 @@ public interface StockScraping{
 		double cp =  Double.parseDouble(content.attr("content"));
 		return new StockScrapedInfo("abc", cp,"", 100, "abc","","","","","","","","","","","","");
 
-		}
-	
+	}
+	*/
 		
 	public default Map<String,String> getAAStockCookies(String url) throws Exception {
 		//java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF);
@@ -189,10 +189,11 @@ public interface StockScraping{
 		}
 		
 		//System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
-		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps);
-		//return new StockScrapedInfo("abc", 100, 10000, "abc");
+		//stockName, currentPrice, posNegForLast, lotSize, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividendPayout, eps, marketCap, nav, dps, bid_delayed, ask_delayed, high, low, open, prev_close, volume, turnover, oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25
+
+		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps, bid_delayed, ask_delayed, high, low,open, prev_close, volume, turnover, 		oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25);
 	}
-	
+
 	public default String scrapeAAStockElement(Document doc, String lookupQuery){
 		Elements elements = doc.select(lookupQuery);
 		//System.out.println(lookupQuery + ": " + elements.get(0).ownText());
@@ -200,7 +201,7 @@ public interface StockScraping{
 		
 	}
 	
-	
+	/*
 	public default StockScrapedInfo getStockDataFromYahooFinanceAPI() throws InterruptedException, IOException{
 		String url = "https://query.yahooapis.com/v1/public/yql?q="; 
 		String yql_query = "select * from yahoo.finance.quotes where symbol=\"0001.hk\"";
@@ -216,4 +217,5 @@ public interface StockScraping{
 		return new StockScrapedInfo("abc", 1000,"" ,100,"abc","","","","","","","","","","","","");
 
 		}
+		*/
 }

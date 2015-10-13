@@ -1032,112 +1032,69 @@ public class Controller implements Initializable{
         GridPane.setHalignment(fxLastUpdateLabel, HPos.RIGHT);
 
         // Lot       
-        Label labelLotText = new Label("Lot Size");
-        labelLotText.setFont(Font.font("Arial",13));
-        labelLotText.setTextFill(Color.DIMGRAY);
+        Label labelLotText = getTextLabel("Lot Size",HPos.LEFT);
         gridPane.add(labelLotText, 0, 4,2,1);
-        GridPane.setHalignment(labelLotText, HPos.LEFT);
-        labelLotVal = new Label("");
-        labelLotVal.setFont(Font.font("Arial",13));
+        labelLotVal = getTextLabel("",HPos.RIGHT);
         gridPane.add(labelLotVal, 2,4,2,1);
-        GridPane.setHalignment(labelLotVal,HPos.RIGHT);
 
         // Spread       
-        Label labelSpreadText = new Label("Spread");
-        labelSpreadText.setFont(Font.font("Arial",13));
-        labelSpreadText.setTextFill(Color.DIMGRAY);
+        Label labelSpreadText = getTextLabel("Spread",HPos.LEFT);
         gridPane.add(labelSpreadText, 0, 5,2,1);
-        GridPane.setHalignment(labelSpreadText, HPos.LEFT);
-        labelSpreadVal = new Label("");
-        labelSpreadVal.setFont(Font.font("Arial",13));
+        labelSpreadVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelSpreadVal, 2,5,2,1);
-        GridPane.setHalignment(labelSpreadVal,HPos.RIGHT);
 
         // PE Ratio       
-        Label labelPeRatioText = new Label("P/E Ratio");
-        labelPeRatioText.setFont(Font.font("Arial",13));
-        labelPeRatioText.setTextFill(Color.DIMGRAY);
+        Label labelPeRatioText = getTextLabel("P/E Ratio", HPos.LEFT);
         gridPane.add(labelPeRatioText, 0, 6,2,1);
-        GridPane.setHalignment(labelPeRatioText, HPos.LEFT);
-        labelPeRatioVal = new Label("");
-        labelPeRatioVal.setFont(Font.font("Arial",13));
+        labelPeRatioVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelPeRatioVal, 2,6,2,1);
-        GridPane.setHalignment(labelPeRatioVal,HPos.RIGHT);
 
         // Yield       
-        Label labelYieldText = new Label("Yield");
-        labelYieldText.setFont(Font.font("Arial",13));
-        labelYieldText.setTextFill(Color.DIMGRAY);
+        Label labelYieldText = getTextLabel("Yield", HPos.LEFT);
         gridPane.add(labelYieldText, 0, 7,2,1);
-        GridPane.setHalignment(labelYieldText, HPos.LEFT);
-        labelYieldVal = new Label("");
-        labelYieldVal.setFont(Font.font("Arial",13));
+        labelYieldVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelYieldVal, 2,7,2,1);
-        GridPane.setHalignment(labelYieldVal,HPos.RIGHT);
 
         // Dividend Payout       
-        Label labelDividendPayoutText = new Label("Dividend Payout");
-        labelDividendPayoutText.setFont(Font.font("Arial",13));
-        labelDividendPayoutText.setTextFill(Color.DIMGRAY);
+        Label labelDividendPayoutText = getTextLabel("Dividend Payout", HPos.LEFT);
         gridPane.add(labelDividendPayoutText, 0, 8,3,1);
-        GridPane.setHalignment(labelDividendPayoutText, HPos.LEFT);
-        labelDividendPayoutVal = new Label("");
-        labelDividendPayoutVal.setFont(Font.font("Arial",13));
+        labelDividendPayoutVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelDividendPayoutVal, 2,8,2,1);
-        GridPane.setHalignment(labelDividendPayoutVal,HPos.RIGHT);
 
         // EPS       
-        Label labelEpsText = new Label("Earnings Per Share");
-        labelEpsText.setFont(Font.font("Arial",13));
-        labelEpsText.setTextFill(Color.DIMGRAY);
+        Label labelEpsText = getTextLabel("Earnings Per Share",HPos.LEFT);
         gridPane.add(labelEpsText, 0, 9,3,1);
-        GridPane.setHalignment(labelEpsText, HPos.LEFT);
-        labelEpsVal = new Label("");
-        labelEpsVal.setFont(Font.font("Arial",13));
+        labelEpsVal = getTextLabel("",HPos.RIGHT);
         gridPane.add(labelEpsVal, 2,9,2,1);
-        GridPane.setHalignment(labelEpsVal,HPos.RIGHT);
         
         // Market Cap       
-        Label labelMarketCapText = new Label("Market Cap");
-        labelMarketCapText.setFont(Font.font("Arial",13));
-        labelMarketCapText.setTextFill(Color.DIMGRAY);
+        Label labelMarketCapText = getTextLabel("Market Cap", HPos.LEFT);
         gridPane.add(labelMarketCapText, 0, 10,2,1);
-        GridPane.setHalignment(labelMarketCapText, HPos.LEFT);
-        labelMarketCapVal = new Label("");
-        labelMarketCapVal.setFont(Font.font("Arial",13));
+        labelMarketCapVal = getTextLabel("",HPos.RIGHT);
         gridPane.add(labelMarketCapVal, 2,10,2,1);
-        GridPane.setHalignment(labelMarketCapVal,HPos.RIGHT);
         
         // NAV       
-        Label labelNavText = new Label("NAV");
-        labelNavText.setFont(Font.font("Arial",13));
-        labelNavText.setTextFill(Color.DIMGRAY);
+        Label labelNavText = getTextLabel("NAV", HPos.LEFT);
         gridPane.add(labelNavText, 0, 11,2,1);
-        GridPane.setHalignment(labelNavText, HPos.LEFT);
-        labelNavVal = new Label("");
-        labelNavVal.setFont(Font.font("Arial",13));
+        labelNavVal = getTextLabel("",HPos.RIGHT);
         gridPane.add(labelNavVal, 2,11,2,1);
-        GridPane.setHalignment(labelNavVal,HPos.RIGHT);
         
         // DPS   
-        Label labelDpsText = new Label("Dividend/share");
-        labelDpsText.setFont(Font.font("Arial",13));
-        labelDpsText.setTextFill(Color.DIMGRAY);
+        Label labelDpsText = getTextLabel("Dividend/share", HPos.LEFT);
         gridPane.add(labelDpsText, 0, 12,3,1);
-        GridPane.setHalignment(labelDpsText, HPos.LEFT);
-        labelDpsVal = new Label("");
-        labelDpsVal.setFont(Font.font("Arial",13));
+        labelDpsVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelDpsVal, 2,12,2,1);
-        GridPane.setHalignment(labelDpsVal,HPos.RIGHT);
         
         Button moreInfo = new Button("More Info");
         gridPane.add(moreInfo, 0, 14,4,1);
         GridPane.setHalignment(moreInfo,HPos.CENTER);
+        midb = new MoreInfoDisplayBox();
         moreInfo.setOnAction(e -> {
         	if(midb!=null){
+        		midb.window.show();
         		midb.window.requestFocus();
         	} else{
-        		midb = new MoreInfoDisplayBox();
+        		midb.window.hide();       	
         	}
         });
         
@@ -1261,6 +1218,31 @@ public class Controller implements Initializable{
 				labelMarketCapVal.textProperty().bind(lookUpTicker.marketCapProperty());
 				labelNavVal.textProperty().bind(lookUpTicker.navProperty());
 				labelDpsVal.textProperty().bind(lookUpTicker.dpsProperty());
+				midb.labelBid_delayedVal.textProperty().bind(lookUpTicker.bid_delayedProperty());
+				midb.labelAsk_delayedVal.textProperty().bind(lookUpTicker.ask_delayedProperty());
+				midb.labelHighVal.textProperty().bind(lookUpTicker.highProperty());
+				midb.labelLowVal.textProperty().bind(lookUpTicker.lowProperty());
+				midb.labelOpenVal.textProperty().bind(lookUpTicker.openProperty());
+				midb.labelPrev_closeVal.textProperty().bind(lookUpTicker.prev_closeProperty());
+				midb.labelVolumeVal.textProperty().bind(lookUpTicker.volumeProperty());
+				midb.labelTurnoverVal.textProperty().bind(lookUpTicker.turnoverProperty());
+				midb.labelOneMonthRangeVal.textProperty().bind(lookUpTicker.oneMonthRangeProperty());
+				midb.labelTwoMonthRangeVal.textProperty().bind(lookUpTicker.twoMonthRangeProperty());
+				midb.labelThreeMonthRangeVal.textProperty().bind(lookUpTicker.threeMonthRangeProperty());
+				midb.labelFiftyTwoWeekRangeVal.textProperty().bind(lookUpTicker.fiftyTwoWeekRangeProperty());
+				midb.labelRateRatioVal.textProperty().bind(lookUpTicker.rateRatioProperty());
+				midb.labelVolumeRatioVal.textProperty().bind(lookUpTicker.volumeRatioProperty());
+				midb.labelSma10Val.textProperty().bind(lookUpTicker.sma10Property());
+				midb.labelSma20Val.textProperty().bind(lookUpTicker.sma20Property());
+				midb.labelSma50Val.textProperty().bind(lookUpTicker.sma50Property());
+				midb.labelSma100Val.textProperty().bind(lookUpTicker.sma100Property());
+				midb.labelSma250Val.textProperty().bind(lookUpTicker.sma250Property());
+				midb.labelRsi10Val.textProperty().bind(lookUpTicker.rsi10Property());
+				midb.labelRsi14Val.textProperty().bind(lookUpTicker.rsi14Property());
+				midb.labelRsi20Val.textProperty().bind(lookUpTicker.rsi20Property());
+				midb.labelMacd8_17Val.textProperty().bind(lookUpTicker.macd8_17Property());
+				midb.labelMacd12_25Val.textProperty().bind(lookUpTicker.macd12_25Property());
+
 			}
         }));
 			
@@ -1558,6 +1540,16 @@ public class Controller implements Initializable{
 		
 	}
    
+	public Label getTextLabel(String text, HPos hpos){
+		Label textLabel = new Label(text);
+		textLabel.setFont(Font.font("Arial",13));
+		if(!text.equals("")){
+			textLabel.setTextFill(Color.DIMGRAY);
+		}
+        GridPane.setHalignment(textLabel, hpos);
+
+		return textLabel;
+	}
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
 		observableListOfTrades.addListener(savedListener);

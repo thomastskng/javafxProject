@@ -18,9 +18,32 @@ public class StockScrapedInfo {
 	private String marketCap;
 	private String nav;
 	private String dps;
+	public String bid_delayed;
+	public String ask_delayed;
+	public String high;
+	public String low;
+	public String open;
+	public String prev_close;
+	public String volume;
+	public String turnover;
+	public String oneMonthRange;
+	public String twoMonthRange;
+	public String threeMonthRange;
+	public String fiftyTwoWeekRange;
+	public String rateRatio;
+	public String volumeRatio;
+	public String sma10;
+	public String sma20;
+	public String sma50;
+	public String sma100;
+	public String sma250;
+	public String rsi10;
+	public String rsi14;
+	public String rsi20;
+	public String macd8_17;
+	public String macd12_25;
 	
-	
-	public StockScrapedInfo(String stockName, double currentPrice, String posNegForLast, double lotSize,String lastUpdate, String chg, String posNegForChg, String chgPercent, String posNegForChgPercent, String spread, String peRatio, String yield, String dividendPayout, String eps, String marketCap, String nav, String dps){
+	public StockScrapedInfo(String stockName, double currentPrice, String posNegForLast, double lotSize,String lastUpdate, String chg, String posNegForChg, String chgPercent, String posNegForChgPercent, String spread, String peRatio, String yield, String dividendPayout, String eps, String marketCap, String nav, String dps,  String bid_delayed, String ask_delayed, String high, String low, String open, String prev_close, String volume, String turnover, String oneMonthRange, String twoMonthRange, String threeMonthRange, String fiftyTwoWeekRange, String rateRatio, String volumeRatio, String sma10, String sma20, String sma50, String sma100, String sma250, String rsi10, String rsi14, String rsi20, String macd8_17, String macd12_25){
 		this.stockName = stockName;
 		this.currentPrice = currentPrice;
 		this.lotSize = lotSize;
@@ -38,6 +61,31 @@ public class StockScrapedInfo {
 		this.marketCap = marketCap;
 		this.nav = nav;
 		this.dps = dps;
+		this.bid_delayed = bid_delayed;
+		this.ask_delayed = ask_delayed;
+		this.high = high;
+		this.low = low;
+		this.open = open;
+		this.prev_close = prev_close;
+		this.volume = volume;
+		this.turnover = turnover;
+		this.oneMonthRange = oneMonthRange;
+		this.twoMonthRange = twoMonthRange;
+		this.threeMonthRange = threeMonthRange;
+		this.fiftyTwoWeekRange = fiftyTwoWeekRange;
+		this.rateRatio = rateRatio;
+		this.volumeRatio = volumeRatio;
+		this.sma10 = sma10;
+		this.sma20 = sma20;
+		this.sma50 = sma50;
+		this.sma100 = sma100;
+		this.sma250 = sma250;
+		this.rsi10 = rsi10;
+		this.rsi14 = rsi14;
+		this.rsi20 = rsi20;
+		this.macd8_17 = macd8_17;
+		this.macd12_25 = macd12_25;
+		
 		
 	}
 	
@@ -128,5 +176,100 @@ public class StockScrapedInfo {
 	public String getDps(){
 		return this.dps;
 	}
-	
+
+	public String getBid_delayed(){
+		return this.bid_delayed;
+	}
+
+	public String getAsk_delayed(){
+		return this.ask_delayed;
+	}
+
+	public String getHigh(){
+		return this.high;
+	}
+
+	public String getLow(){
+		return this.low;
+	}
+
+	public String getOpen(){
+		return this.open;
+	}
+
+	public String getPrev_close(){
+		return this.prev_close;
+	}
+
+	public String getVolume(){
+		return this.volume;
+	}
+
+	public String getTurnover(){
+		return this.turnover;
+	}
+
+	public String getOneMonthRange(){
+		return this.oneMonthRange;
+	}
+
+	public String getTwoMonthRange(){
+		return this.twoMonthRange;
+	}
+
+	public String getThreeMonthRange(){
+		return this.threeMonthRange;
+	}
+
+	public String getFiftyTwoWeekRange(){
+		return this.fiftyTwoWeekRange;
+	}
+
+	public String getRateRatio(){
+		return this.rateRatio;
+	}
+
+	public String getVolumeRatio(){
+		return this.volumeRatio;
+	}
+
+	public String getSma10(){
+		return this.sma10;
+	}
+
+	public String getSma20(){
+		return this.sma20;
+	}
+
+	public String getSma50(){
+		return this.sma50;
+	}
+
+	public String getSma100(){
+		return this.sma100;
+	}
+
+	public String getSma250(){
+		return this.sma250;
+	}
+
+	public String getRsi10(){
+		return this.rsi10;
+	}
+
+	public String getRsi14(){
+		return this.rsi14;
+	}
+
+	public String getRsi20(){
+		return this.rsi20;
+	}
+
+	public String getMacd8_17(){
+		return this.macd8_17;
+	}
+
+	public String getMacd12_25(){
+		return this.macd12_25;
+	}
 }
