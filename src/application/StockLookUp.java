@@ -95,6 +95,7 @@ public class StockLookUp implements StockScraping{
 				public StockScrapedInfo call() throws Exception {					
 					return getDataFromAAStock(getStockTicker());
 					//return getCurrentPriceFromGoogle();
+					//return getDataFromEtnet(getStockTicker());
 				}
 			};
 		}

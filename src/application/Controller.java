@@ -377,6 +377,7 @@ public class Controller implements Initializable{
 	
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
+		/*
 		observableListOfTrades.addAll(
 				new Trade("Buy", LocalDate.now().minusDays(100),"1113",13680,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"1",13680,0,"My Portfolio")
@@ -395,7 +396,7 @@ public class Controller implements Initializable{
 				//new Trade(BuySell.Sell, LocalDate.now(),1,10000,9999),
 				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2)
 		);
-		
+		*/
 		// Add listener to observable list to listen to ALL changes
 		observableListOfTrades.addListener(new ListChangeListener<Trade>() {
             @Override
@@ -795,10 +796,11 @@ public class Controller implements Initializable{
 
 	// initialise fxWatchList 
 	public void initializeFxWatchList(){	
+		/*
 		observableListOfWatchListStocks.addAll(
 				new WatchListStock("Last >= Target","1",123.0)
 		);
-		
+		*/
 		fxWatchList.setItems(observableListOfWatchListStocks);
 	
 		fxWatchList.setEditable(true);
@@ -1164,7 +1166,7 @@ public class Controller implements Initializable{
 
         
         
-		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
+		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(0.5), new EventHandler<ActionEvent>() {
 			@Override
             public void handle(ActionEvent actionEvent) {
 				fxLastLabel.textProperty().unbind();
@@ -1550,6 +1552,7 @@ public class Controller implements Initializable{
 
 		return textLabel;
 	}
+	
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
 		observableListOfTrades.addListener(savedListener);

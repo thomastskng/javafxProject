@@ -2,7 +2,9 @@ package application;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jsoup.Jsoup;
@@ -78,15 +80,14 @@ public interface StockScraping{
 		
 		//getAAStockCookies(url);
 		//System.out.println(doc.html());
-		// Scrape 
-
 		
+		// AAStock
 		// Scrape current price
 		Elements scrape1 = doc.select("ul:contains(Last) + ul>li>span");
 		// Scrape +ve / -ve indicator of current price
 		String posNegForLast = scrape1.attr("class");
 		double cp = Double.parseDouble(scrape1.get(0).ownText());
-		
+
 		// Scrape Chg
 		Elements scrape2 = doc.select("ul:contains(Chg) + ul>li>span");
 		String posNegForChg = scrape2.attr("class");
@@ -201,6 +202,193 @@ public interface StockScraping{
 		
 	}
 	
+	
+	 public default StockScrapedInfo getDataFromEtnet(String ticker) throws Exception{
+			String[] userAgentStr = new String[]{
+									"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
+									"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
+									"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",
+									"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",
+									"Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16",
+									"Opera/12.80 (Windows NT 5.1; U; en) Presto/2.10.289 Version/12.02",
+									"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A",
+									"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
+									"Mozilla/5.0 (Windows; U; Windows NT 6.1; sv-SE) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4",
+									"Mozilla/5.0 (Windows; U; Windows NT 5.2; en-US) AppleWebKit/533.17.8 (KHTML, like Gecko) Version/5.0.1 Safari/533.17.8",
+									"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
+									"Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0"
+			};
+			
+			String url = "http://www.etnet.com.hk/www/eng/stocks/realtime/quote.php?code=" + ticker;
+			//System.out.println(url);
+			Map<String,String> cookies = new HashMap<String,String>();
+			cookies.put("AALTP", "1");
+			Document doc = Jsoup.connect(url)
+								.cookies(cookies)
+								.userAgent(userAgentStr[(int) Math.random()*(userAgentStr.length-1)])
+								.referrer("http://www.google.com.hk")
+								.timeout(12000)
+								.get();
+			
+			// Scrape ETNET
+			
+			String url2 = "http://www.etnet.com.hk/www/eng/stocks/realtime/quote.php?code=" + ticker;
+			Document doc2 = Jsoup.connect(url2)
+								.userAgent(userAgentStr[(int) Math.random()*(userAgentStr.length-1)])
+								.referrer("http://www.google.com.hk")
+								.timeout(12000)
+								.get();
+
+			// Last
+			Element scrape = doc2.select("div#StkDetailMainBox td").get(0).select("span").get(0);
+			String posNegForLast = getUpOrDown(scrape.attr("class"));
+			System.out.println("posNegForLast:" + posNegForLast);
+			NumberFormat nf = NumberFormat.getInstance(Locale.US);
+			double cp = nf.parse(scrape.ownText()).doubleValue();
+			System.out.println("Last: " + cp);
+			
+			// Up / Down for Chg + Chg + Up / Down for Chg % + chg%
+			String chgChgPercent = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",0,1);
+			// Up / Down for Chg 
+			String posNegForChg = getUpOrDown(Character.toString(chgChgPercent.split(" ")[0].charAt(0)));
+			// Chg
+			String chg = chgChgPercent.split(" ")[0];
+			// Up / Down for Chg %
+			String posNegForChgPercent = getUpOrDown(Character.toString(chgChgPercent.split(" ")[1].charAt(1)));
+			// Chg % 
+			String chgPercent = chgChgPercent.split(" ")[1];
+
+			System.out.println("split: " + posNegForChg + "/"+ chg + "/" + posNegForChgPercent + "/" +chgPercent);
+			// high
+			String high = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",1,1);
+			// volume
+			String volume = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",2,1);
+			// prev close
+			String prev_close = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",3,0);
+			// 1 month high
+			String one_month_high = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",4,0);
+			// market cap
+			String marketCap = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",5,0);
+			// low
+			String low = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",6,1);
+			// turnover
+			String turnover = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",7,1);
+			// open
+			String open = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",8,0);
+			// 1 month low
+			String one_month_low = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",9,0);
+			// short sell
+			String short_sell = scrapeEtnetStkDetailMainBoxElement(doc2,"div#StkDetailMainBox td",10,1);
+
+			// bid
+			String bid = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,1);
+			// sma10
+			String sma10 = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,3);
+			// ask
+			String ask = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,5);
+			// sma20
+			String sma20 = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,7);
+			// number of trades
+			String no_of_trade = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,9);
+			// sma50
+			String sma50 = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,11);
+			// amount per trade
+			String amount_per_trade = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,13);
+			// sma250
+			String sma250 = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,15);
+			// vwap
+			String vwap = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,17);
+			// 52 week high
+			String fifty_two_week_high = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,19);
+			// 52 week low
+			String fifty_two_week_low = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,23);
+			// board lot
+			double board_lot = Double.parseDouble(scrapeEtnetStklistElement(doc2,"div#StkList ul",0,25));
+			// rsi14
+			String rsi14 = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,27);
+			// admission fee
+			String admission_fee = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,29);
+			// 10-D R. of Return
+			String rate_of_return_10_day = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,31);
+			// Spread
+			String spread = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,33);
+			// Rate of risk
+			String rate_of_risk = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,35);
+			// PE Ratio
+			String peRatio = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,37);
+			// Risk of return rate 
+			String risk_return_rate = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,39);
+			// yield
+			String yield = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,41);
+			// beta
+			String beta = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,43);
+			// eps
+			String eps = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,45);
+			// dps
+			String dps = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,49);
+			// nbv per share
+			String nbv_per_share = scrapeEtnetStklistElement(doc2,"div#StkList ul",0,53);
+			// dividend
+			String dividend = scrapeEtnetStkDividendStkDetailTimeElement(doc2, "div#StkDividend div.Text",0);
+			// ex date
+			String ex_date = scrapeEtnetStkDividendStkDetailTimeElement(doc2, "div#StkDividend div.Text",1);
+			// payable date
+			String payable_date = scrapeEtnetStkDividendStkDetailTimeElement(doc2, "div#StkDividend div.Text",2);
+			// Last Updated Time
+			String last_updated_time = scrapeEtnetStkDividendStkDetailTimeElement(doc2, "div#StkDetailTime",0);
+			String stockName = scrapeEtnetStkNameElement(doc2,"div#StkQuoteHeader");
+			//stockName, currentPrice, posNegForLast, lotSize, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividendPayout, eps, marketCap, nav, dps, bid_delayed, ask_delayed, high, low, open, prev_close, volume, turnover, oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25
+			return new StockScrapedInfo(stockName ,cp, posNegForLast, board_lot, last_updated_time, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, "", eps, marketCap,nbv_per_share, dps, bid,ask, high,low, prev_close, volume, turnover,  one_month_low + " - "+ one_month_high, "","",fifty_two_week_low + " - " + fifty_two_week_high, "", "",sma10, sma20, sma50, "", sma250, "", rsi14,"", "","", ""  );
+	 
+	 }
+	 
+	// Scrape Etnet StkDetailMainBox 
+	public default String scrapeEtnetStkDetailMainBoxElement(Document doc, String lookupQuery, int i,  int j){
+		Elements elements = doc.select(lookupQuery);
+		//System.out.println(lookupQuery + ": " + elements.get(10));
+		//System.out.println(doc);
+		String str = elements.get(i).select("span").get(j).ownText();
+		System.out.println(lookupQuery + ": " + str);
+		return str;
+	}
+	
+	public default String scrapeEtnetStklistElement(Document doc, String lookupQuery, int i,  int j){
+		Elements elements = doc.select(lookupQuery);
+		//System.out.println(lookupQuery + ": " + elements);
+		//System.out.println(doc);
+		String str = elements.get(i).select("li").get(j).ownText();
+		System.out.println(lookupQuery + ": " + str);
+		return str;
+	}
+	
+	public default String scrapeEtnetStkDividendStkDetailTimeElement(Document doc, String lookupQuery, int i){
+		Elements elements = doc.select(lookupQuery);
+		//System.out.println(lookupQuery + ": " + elements);
+		//System.out.println(doc);
+		String str = ((elements.get(0).html().split("<br>"))[i]).trim();
+		System.out.println(lookupQuery + ": " + str);
+		return str;
+	}
+	
+	public default String scrapeEtnetStkNameElement(Document doc, String lookupQuery){
+		Elements elements = doc.select(lookupQuery);
+		//System.out.println(lookupQuery + ": " + elements);
+		//System.out.println(doc);
+		String str = elements.get(0).ownText();
+		System.out.println(lookupQuery + ": " + str);
+		return str;
+	}
+	
+	public default String getUpOrDown(String str){
+		if(str.contains("down") || str.contains("-")){
+			return "neg bold";
+		} else if(str.contains("up") || str.contains("+")){
+			return "pos bold";
+		} else{
+			return "unc bold";
+		}
+	}
+	
 	/*
 	public default StockScrapedInfo getStockDataFromYahooFinanceAPI() throws InterruptedException, IOException{
 		String url = "https://query.yahooapis.com/v1/public/yql?q="; 
@@ -218,4 +406,5 @@ public interface StockScraping{
 
 		}
 		*/
+	
 }
