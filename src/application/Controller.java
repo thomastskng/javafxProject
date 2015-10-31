@@ -377,7 +377,7 @@ public class Controller implements Initializable{
 	
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
-		/*
+		
 		observableListOfTrades.addAll(
 				new Trade("Buy", LocalDate.now().minusDays(100),"1113",13680,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"1",13680,0,"My Portfolio")
@@ -389,14 +389,8 @@ public class Controller implements Initializable{
 				,new Trade("Buy", LocalDate.now().minusDays(100),"941",20000,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"533",10000,0,"abc")
 
-				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
-				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
-				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
-				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2),
-				//new Trade(BuySell.Sell, LocalDate.now(),1,10000,9999),
-				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2)
 		);
-		*/
+		
 		// Add listener to observable list to listen to ALL changes
 		observableListOfTrades.addListener(new ListChangeListener<Trade>() {
             @Override

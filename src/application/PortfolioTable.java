@@ -76,7 +76,20 @@ public class PortfolioTable {
 			TableColumn <ConsolidatedTrade, String> fxPortfolioStockName = new TableColumn <ConsolidatedTrade, String>("Name");
 			TableColumn<ConsolidatedTrade,String> fxPortfolioPortfolioName = new TableColumn<ConsolidatedTrade,String>("Portfolio"); 
 
-			
+			fxPortfolioTicker.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(13));
+			fxPortfolioAvgCost.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(8));
+			fxPortfolioVolumeHeld.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(10));
+			fxPortfolioVolumeSold.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(10));
+			fxPortfolioTarget.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(10));
+			fxPortfolioStopLoss.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(10));
+			fxPortfolioCurrentPrice.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(13));
+			fxPortfolioUPnL.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(9));
+			fxPortfolioPnL.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(9));
+			fxPortfolioPosition.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(13));
+			fxPortfolioPnLHistory.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(13));
+			fxPortfolioStockName.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(5));
+			fxPortfolioPortfolioName.prefWidthProperty().bind(portfolioTableView.widthProperty().divide(7));
+
 			portfolioTableView.getColumns().addAll(fxPortfolioStockName,fxPortfolioTicker,fxPortfolioAvgCost,fxPortfolioCurrentPrice,fxPortfolioUPnL,fxPortfolioPnL,fxPortfolioTarget,fxPortfolioStopLoss,fxPortfolioPosition,fxPortfolioVolumeHeld,fxPortfolioVolumeSold,fxPortfolioPnLHistory,fxPortfolioPortfolioName);
 
 			for(TableColumn tc:portfolioTableView.getColumns()){
