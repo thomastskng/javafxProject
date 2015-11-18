@@ -3,7 +3,7 @@
 */*.class
 */*/*.class
 */*/*/*.class
-
+bin/application/*.class
 
 # but not these files
 !.gitignore
