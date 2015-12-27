@@ -83,7 +83,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	
 	
 	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss, String portfolio){
-		this.stockTicker 	= new SimpleStringProperty(stockTicker);
+		this.stockTicker 	= new SimpleStringProperty(stockTicker.replaceFirst("^0+(?!$)", ""));
 		this.avgPrice 		= new SimpleDoubleProperty(avgPrice);
 		this.volumeHeld 	= new SimpleDoubleProperty(volumeHeld);
 		this.volumeSold 	= new SimpleDoubleProperty(volumeSold);

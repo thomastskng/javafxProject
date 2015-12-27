@@ -98,7 +98,7 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 		this.buySell = new SimpleStringProperty(buySell);
 		this.remarks = new SimpleStringProperty("");
 		this.transactionDate = new SimpleObjectProperty<LocalDate>(transactionDate);
-		this.stockTicker = new SimpleStringProperty(stockTicker);
+		this.stockTicker = new SimpleStringProperty(stockTicker.replaceFirst("^0+(?!$)", ""));
 		this.volume = new SimpleDoubleProperty(volume);
 		this.price = new SimpleDoubleProperty(price);
 		this.portfolio = new SimpleStringProperty(portfolio);
@@ -232,7 +232,7 @@ public class Trade implements Comparable<Trade>, Serializable,StockScraping{
 	public void setStockTicker(String stockTicker){
 		//stockTickerProperty().set("-1");
 		//int st = Integer.parseInt(stockTicker);
-		stockTickerProperty().set(stockTicker);
+		stockTickerProperty().set(stockTicker.replaceFirst("^0+(?!$)", ""));
 	}
 	
 	public double getVolume(){

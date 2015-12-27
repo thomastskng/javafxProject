@@ -387,7 +387,7 @@ public class Controller implements Initializable{
 				,new Trade("Buy", LocalDate.now().minusDays(100),"5",23183,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"3",91310,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"941",20000,0,"My Portfolio")
-				,new Trade("Buy", LocalDate.now().minusDays(100),"533",10000,0,"abc")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"533",0,0,"abc")
 
 		);
 		
