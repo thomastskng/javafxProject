@@ -33,7 +33,6 @@ public class StockScrapedInfo {
 	public String rateRatio;
 	public String volumeRatio;
 	public String sma10;
-	public String sma20;
 	public String sma50;
 	public String sma100;
 	public String sma250;
@@ -42,8 +41,11 @@ public class StockScrapedInfo {
 	public String rsi20;
 	public String macd8_17;
 	public String macd12_25;
+	public String shortSellTurnover;
+	public String shortSellRatio;
+	public String industry;
 	
-	public StockScrapedInfo(String stockName, double currentPrice, String posNegForLast, double lotSize,String lastUpdate, String chg, String posNegForChg, String chgPercent, String posNegForChgPercent, String spread, String peRatio, String yield, String dividendPayout, String eps, String marketCap, String nav, String dps,  String bid_delayed, String ask_delayed, String high, String low, String open, String prev_close, String volume, String turnover, String oneMonthRange, String twoMonthRange, String threeMonthRange, String fiftyTwoWeekRange, String rateRatio, String volumeRatio, String sma10, String sma20, String sma50, String sma100, String sma250, String rsi10, String rsi14, String rsi20, String macd8_17, String macd12_25){
+	public StockScrapedInfo(String stockName, double currentPrice, String posNegForLast, double lotSize,String lastUpdate, String chg, String posNegForChg, String chgPercent, String posNegForChgPercent, String spread, String peRatio, String yield, String dividendPayout, String eps, String marketCap, String nav, String dps,  String bid_delayed, String ask_delayed, String high, String low, String open, String prev_close, String volume, String turnover, String oneMonthRange, String twoMonthRange, String threeMonthRange, String fiftyTwoWeekRange, String rateRatio, String volumeRatio, String sma10, String sma50, String sma100, String sma250, String rsi10, String rsi14, String rsi20, String macd8_17, String macd12_25, String shortSellTurnover, String shortSellRatio, String industry){
 		this.stockName = stockName;
 		this.currentPrice = currentPrice;
 		this.lotSize = lotSize;
@@ -76,7 +78,6 @@ public class StockScrapedInfo {
 		this.rateRatio = rateRatio;
 		this.volumeRatio = volumeRatio;
 		this.sma10 = sma10;
-		this.sma20 = sma20;
 		this.sma50 = sma50;
 		this.sma100 = sma100;
 		this.sma250 = sma250;
@@ -85,7 +86,9 @@ public class StockScrapedInfo {
 		this.rsi20 = rsi20;
 		this.macd8_17 = macd8_17;
 		this.macd12_25 = macd12_25;
-		
+		this.shortSellTurnover = shortSellTurnover;
+		this.shortSellRatio = shortSellRatio;
+		this.industry = industry;
 		
 	}
 	
@@ -237,10 +240,6 @@ public class StockScrapedInfo {
 		return this.sma10;
 	}
 
-	public String getSma20(){
-		return this.sma20;
-	}
-
 	public String getSma50(){
 		return this.sma50;
 	}
@@ -272,4 +271,17 @@ public class StockScrapedInfo {
 	public String getMacd12_25(){
 		return this.macd12_25;
 	}
+
+	public String getShortSellTurnover(){
+		return this.shortSellTurnover;
+	}
+	
+	public String getShortSellRatio(){
+		return this.shortSellRatio;
+	}
+
+	public String getIndustry(){
+		return this.industry;
+	}
 }
+

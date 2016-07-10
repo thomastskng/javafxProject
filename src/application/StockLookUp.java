@@ -76,7 +76,6 @@ public class StockLookUp implements StockScraping{
     private final ReadOnlyStringWrapper rateRatio;
     private final ReadOnlyStringWrapper volumeRatio;
     private final ReadOnlyStringWrapper sma10;
-    private final ReadOnlyStringWrapper sma20;
     private final ReadOnlyStringWrapper sma50;
     private final ReadOnlyStringWrapper sma100;
     private final ReadOnlyStringWrapper sma250;
@@ -85,7 +84,10 @@ public class StockLookUp implements StockScraping{
     private final ReadOnlyStringWrapper rsi20;
     private final ReadOnlyStringWrapper macd8_17;
     private final ReadOnlyStringWrapper macd12_25;
-
+    private final ReadOnlyStringWrapper shortSellTurnover;
+    private final ReadOnlyStringWrapper shortSellRatio;
+    private final ReadOnlyStringWrapper industry;
+    
     
 	private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -153,7 +155,6 @@ public class StockLookUp implements StockScraping{
 		this.rateRatio= new ReadOnlyStringWrapper("");
 		this.volumeRatio= new ReadOnlyStringWrapper("");
 		this.sma10= new ReadOnlyStringWrapper("");
-		this.sma20= new ReadOnlyStringWrapper("");
 		this.sma50= new ReadOnlyStringWrapper("");
 		this.sma100= new ReadOnlyStringWrapper("");
 		this.sma250= new ReadOnlyStringWrapper("");
@@ -162,6 +163,10 @@ public class StockLookUp implements StockScraping{
 		this.rsi20= new ReadOnlyStringWrapper("");
 		this.macd8_17= new ReadOnlyStringWrapper("");
 		this.macd12_25= new ReadOnlyStringWrapper("");
+		this.shortSellTurnover = new ReadOnlyStringWrapper("");
+		this.shortSellRatio = new ReadOnlyStringWrapper("");
+		this.industry = new ReadOnlyStringWrapper("");
+		
 		// last
 		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
 	    							if(stockService.getLastValue() != null){
@@ -250,8 +255,6 @@ public class StockLookUp implements StockScraping{
 		makeStringBinding(this.volumeRatio, StockScrapedInfo::getVolumeRatio);
 		//sma10
 		makeStringBinding(this.sma10, StockScrapedInfo::getSma10);
-		//sma20
-		makeStringBinding(this.sma20, StockScrapedInfo::getSma20);
 		//sma50
 		makeStringBinding(this.sma50, StockScrapedInfo::getSma50);
 		//sma100
@@ -268,7 +271,12 @@ public class StockLookUp implements StockScraping{
 		makeStringBinding(this.macd8_17, StockScrapedInfo::getMacd8_17);
 		//macd12_25
 		makeStringBinding(this.macd12_25, StockScrapedInfo::getMacd12_25);
-
+		//shortSellTurnover
+		makeStringBinding(this.shortSellTurnover, StockScrapedInfo::getShortSellTurnover);
+		// shortSellRatio
+		makeStringBinding(this.shortSellRatio, StockScrapedInfo::getShortSellRatio);
+		// industry
+		makeStringBinding(this.industry,StockScrapedInfo::getIndustry);
 		
 		startMonitoring();
 	}	
@@ -527,13 +535,7 @@ public class StockLookUp implements StockScraping{
 	public String getSma10(){
 		return this.sma10Property().get();
 	}
-	public ReadOnlyStringProperty sma20Property(){
-		return this.sma20.getReadOnlyProperty();
-	}
 
-	public String getSma20(){
-		return this.sma20Property().get();
-	}
 	public ReadOnlyStringProperty sma50Property(){
 		return this.sma50.getReadOnlyProperty();
 	}
@@ -589,6 +591,30 @@ public class StockLookUp implements StockScraping{
 
 	public String getMacd12_25(){
 		return this.macd12_25Property().get();
+	}
+	
+	public ReadOnlyStringProperty shortSellTurnoverProperty(){
+		return this.shortSellTurnover.getReadOnlyProperty();
+	}
+	
+	public String getShortSellTurnover(){
+		return this.shortSellTurnoverProperty().get();
+	}
+	
+	public ReadOnlyStringProperty shortSellRatioProperty(){
+		return this.shortSellRatio.getReadOnlyProperty();
+	}
+	
+	public String getShortSellRatio(){
+		return this.shortSellRatioProperty().get();
+	}
+	
+	public ReadOnlyStringProperty industryProperty(){
+		return this.industry.getReadOnlyProperty();
+	}
+	
+	public String getIndustry(){
+		return this.industryProperty().get();
 	}
 	
 	// multi-threading

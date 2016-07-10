@@ -140,6 +140,9 @@ public class Controller implements Initializable{
     public Label labelMarketCapVal;
     public Label labelNavVal;
     public Label labelDpsVal;
+    public Label labelShortSellTurnoverVal;
+    public Label labelShortSellRatioVal;
+    public Label labelIndustryVal;
     public Label fxLabel3;
     public Label fxLabel4;
 
@@ -387,7 +390,7 @@ public class Controller implements Initializable{
 				,new Trade("Buy", LocalDate.now().minusDays(100),"5",23183,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"3",91310,0,"My Portfolio")
 				,new Trade("Buy", LocalDate.now().minusDays(100),"941",20000,0,"My Portfolio")
-				,new Trade("Buy", LocalDate.now().minusDays(100),"533",0,0,"abc")
+				//,new Trade("Buy", LocalDate.now().minusDays(100),"533",0,0,"abc")
 
 		);
 		
@@ -992,7 +995,9 @@ public class Controller implements Initializable{
         gridPane.getRowConstraints().add(13,row4);
         gridPane.getRowConstraints().add(14,row4);
         gridPane.getRowConstraints().add(15,row4);
-
+        gridPane.getRowConstraints().add(16,row4);
+        gridPane.getRowConstraints().add(17,row4);
+        gridPane.getRowConstraints().add(18,row4);
 
         
         // Stock Name
@@ -1040,13 +1045,13 @@ public class Controller implements Initializable{
         gridPane.add(labelSpreadVal, 2,5,2,1);
 
         // PE Ratio       
-        Label labelPeRatioText = getTextLabel("P/E Ratio", HPos.LEFT);
+        Label labelPeRatioText = getTextLabel("P/E Ratio-TMM", HPos.LEFT);
         gridPane.add(labelPeRatioText, 0, 6,2,1);
         labelPeRatioVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelPeRatioVal, 2,6,2,1);
 
         // Yield       
-        Label labelYieldText = getTextLabel("Yield", HPos.LEFT);
+        Label labelYieldText = getTextLabel("Yield-TMM", HPos.LEFT);
         gridPane.add(labelYieldText, 0, 7,2,1);
         labelYieldVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelYieldVal, 2,7,2,1);
@@ -1070,7 +1075,7 @@ public class Controller implements Initializable{
         gridPane.add(labelMarketCapVal, 2,10,2,1);
         
         // NAV       
-        Label labelNavText = getTextLabel("NAV", HPos.LEFT);
+        Label labelNavText = getTextLabel("P/B Ratio / NAV", HPos.LEFT);
         gridPane.add(labelNavText, 0, 11,2,1);
         labelNavVal = getTextLabel("",HPos.RIGHT);
         gridPane.add(labelNavVal, 2,11,2,1);
@@ -1081,8 +1086,28 @@ public class Controller implements Initializable{
         labelDpsVal = getTextLabel("", HPos.RIGHT);
         gridPane.add(labelDpsVal, 2,12,2,1);
         
+        // Short Sell Turnover  
+        Label labelShortSellTurnoverText = getTextLabel("Short Sell Turnover", HPos.LEFT);
+        gridPane.add(labelShortSellTurnoverText, 0, 13,3,1);
+        labelShortSellTurnoverVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelShortSellTurnoverVal, 2,13,2,1);
+  
+        // Short Sell Ratio   
+        Label labelShortSellRatioText = getTextLabel("Short Sell Ratio", HPos.LEFT);
+        gridPane.add(labelShortSellRatioText, 0, 14,3,1);
+        labelShortSellRatioVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelShortSellRatioVal, 2,14,2,1);
+  
+        // Industry  
+        Label labelIndustryText = getTextLabel("Industry", HPos.LEFT);
+        gridPane.add(labelIndustryText, 0, 15,3,1);
+        labelIndustryVal = getTextLabel("", HPos.RIGHT);
+        labelIndustryVal.setFont(Font.font("Arial", 10));
+        gridPane.add(labelIndustryVal, 2,15,2,1);
+  
+        
         Button moreInfo = new Button("More Info");
-        gridPane.add(moreInfo, 0, 14,4,1);
+        gridPane.add(moreInfo, 0, 17,4,1);
         GridPane.setHalignment(moreInfo,HPos.CENTER);
         midb = new MoreInfoDisplayBox();
         moreInfo.setOnAction(e -> {
@@ -1174,32 +1199,32 @@ public class Controller implements Initializable{
             	// Last
             	fxLastLabel.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));
             	fxLastLabel.textFillProperty().bind(
-						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
-								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY)  )
+						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY)  )
 						);
             	fxLastLabel.graphicProperty().bind(
-            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos bold")).then(upImgView).otherwise(
-								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg bold")).then(downImgView).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos")).then(upImgView).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg")).then(downImgView).otherwise(new ImageView(new WritableImage(3,3)))  )
             			);
             	// Chg
             	fxChgLabel.textProperty().bind(Bindings.concat(lookUpTicker.chgProperty()).concat(" / "));
             	fxChgLabel.textFillProperty().bind(
-						Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
-								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY))
+						Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY))
 						);
             	fxChgLabel.graphicProperty().bind(
-            			Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos bold")).then(upImgViewChg).otherwise(
-								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg bold")).then(downImgViewChg).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos")).then(upImgViewChg).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg")).then(downImgViewChg).otherwise(new ImageView(new WritableImage(3,3)))  )
             			);
             	// Chg %
             	fxChgPercentLabel.textProperty().bind(lookUpTicker.chgPercentProperty());
             	fxChgPercentLabel.textFillProperty().bind(
-						Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos bold")).then(Color.LIMEGREEN).otherwise(
-								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg bold")).then(Color.RED).otherwise(Color.GREY)  )
+						Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY)  )
 						);
             	fxChgPercentLabel.graphicProperty().bind(
-            			Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos bold")).then(upImgViewChgPercent).otherwise(
-								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg bold")).then(downImgViewChgPercent).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos")).then(upImgViewChgPercent).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg")).then(downImgViewChgPercent).otherwise(new ImageView(new WritableImage(3,3)))  )
             			);
         		// Last Update
 				fxLastUpdateLabel.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
@@ -1214,6 +1239,9 @@ public class Controller implements Initializable{
 				labelMarketCapVal.textProperty().bind(lookUpTicker.marketCapProperty());
 				labelNavVal.textProperty().bind(lookUpTicker.navProperty());
 				labelDpsVal.textProperty().bind(lookUpTicker.dpsProperty());
+				labelShortSellTurnoverVal.textProperty().bind(lookUpTicker.shortSellTurnoverProperty());
+				labelShortSellRatioVal.textProperty().bind(lookUpTicker.shortSellRatioProperty());
+				labelIndustryVal.textProperty().bind(lookUpTicker.industryProperty());
 				midb.labelBid_delayedVal.textProperty().bind(lookUpTicker.bid_delayedProperty());
 				midb.labelAsk_delayedVal.textProperty().bind(lookUpTicker.ask_delayedProperty());
 				midb.labelHighVal.textProperty().bind(lookUpTicker.highProperty());
@@ -1229,7 +1257,6 @@ public class Controller implements Initializable{
 				midb.labelRateRatioVal.textProperty().bind(lookUpTicker.rateRatioProperty());
 				midb.labelVolumeRatioVal.textProperty().bind(lookUpTicker.volumeRatioProperty());
 				midb.labelSma10Val.textProperty().bind(lookUpTicker.sma10Property());
-				midb.labelSma20Val.textProperty().bind(lookUpTicker.sma20Property());
 				midb.labelSma50Val.textProperty().bind(lookUpTicker.sma50Property());
 				midb.labelSma100Val.textProperty().bind(lookUpTicker.sma100Property());
 				midb.labelSma250Val.textProperty().bind(lookUpTicker.sma250Property());

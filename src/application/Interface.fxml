@@ -15,7 +15,7 @@
       <MenuBar fx:id="fxMenuBar" prefHeight="19.0" prefWidth="164.0" BorderPane.alignment="CENTER" />
    </top>
    <center>
-      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="671.0" prefWidth="1102.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="647.0" prefWidth="877.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
         <items>
             <TabPane fx:id="fxTabPaneUpper" prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;" />
             <TabPane fx:id="fxTabPaneLower" prefHeight="280.0" prefWidth="868.0" rotateGraphic="true">
@@ -71,9 +71,9 @@
       </SplitPane>
    </right>
    <left>
-      <ScrollPane prefHeight="637.0" prefWidth="225.0" BorderPane.alignment="CENTER">
+      <ScrollPane prefHeight="647.0" prefWidth="247.0" BorderPane.alignment="CENTER">
          <content>
-            <SplitPane dividerPositions="0.5440956651718983" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
+            <SplitPane dividerPositions="0.5440956651718983" orientation="VERTICAL" prefHeight="671.0" prefWidth="231.0">
               <items>
                   <VBox fx:id="fxVBox" prefHeight="238.0" prefWidth="205.0">
                      <children>

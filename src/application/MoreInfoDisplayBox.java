@@ -174,7 +174,7 @@ public class MoreInfoDisplayBox {
         gridPane_r0c0.add(labelFiftyTwoWeekRangeVal, 1, 3,1,1);
 
         
-        Label labelVolumeRatioText = getTextLabel("Rate Ratio", HPos.LEFT);
+        Label labelVolumeRatioText = getTextLabel("Volume Ratio", HPos.LEFT);
         gridPane_r0c0.add(labelVolumeRatioText, 1, 4,1,1);
         labelVolumeRatioVal = getTextLabel("", HPos.CENTER);
         labelVolumeRatioVal.setFont(Font.font("Arial",FontWeight.EXTRA_BOLD,14));

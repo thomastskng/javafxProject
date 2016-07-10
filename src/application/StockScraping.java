@@ -67,7 +67,7 @@ public interface StockScraping{
 								"Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0"
 		};
 		
-		String url = "http://www.aastocks.com/en/stock/detailquote.aspx?&symbol=" + ticker;
+		String url = "http://www.aastocks.com/en/stocks/quote/detail-quote.aspx?symbol=" + ticker;
 		//System.out.println(url);
 		Map<String,String> cookies = new HashMap<String,String>();
 		cookies.put("AALTP", "1");
@@ -83,125 +83,151 @@ public interface StockScraping{
 		
 		// AAStock
 		// Scrape current price
-		Elements scrape1 = doc.select("ul:contains(Last) + ul>li>span");
+		Elements scrape1 = doc.select("div#labelLast>*>*");
 		// Scrape +ve / -ve indicator of current price
 		String posNegForLast = scrape1.attr("class");
-		double cp = Double.parseDouble(scrape1.get(0).ownText());
+		double cp = Double.parseDouble(scrape1.get(0).text().replaceAll("\u00a0", ""));
 
 		// Scrape Chg
-		Elements scrape2 = doc.select("ul:contains(Chg) + ul>li>span");
-		String posNegForChg = scrape2.attr("class");
-		String chg = scrape2.get(0).ownText();
+		Elements scrape2 = doc.select("div:contains(Change) ~ div");
+		String posNegForChg = scrape2.get(1).select("div>span").attr("class");
+		String chg = scrape2.get(1).text();
 		
 		// Scrape Chg%
-		Elements scrape3 = doc.select("ul:contains(Chg(%)) + ul>li>span");
-		String posNegForChgPercent = scrape3.attr("class");
-		String chgPercent = scrape3.get(0).ownText();
+		Elements scrape3 = doc.select("div:contains(Change\\(%\\)) ~ div");
+		String posNegForChgPercent = scrape3.get(1).select("div>span").attr("class");
+		String chgPercent = scrape3.get(1).text();
 		
 		// Scrape Stock Name
-		Elements scrape4 = doc.select("title");
-		String[] title = scrape4.get(0).ownText().split("\\(");
-		String stockName = title[0];
-		
+		Elements scrape4 = doc.select("span#cp_ucStockBar_litInd_StockName");
+		String title = scrape4.get(0).ownText();
+		String stockName = title;
+
 		// Scrape lot size
-		Elements scrape5 = doc.select("td:contains(Lot Size) + td");
-		double ls = Double.parseDouble(scrape5.get(0).ownText());
+		Elements scrape5 = doc.select("div:contains(Lots) + div + div");
+		double ls = Double.parseDouble(scrape5.get(0).text().replaceAll("\u00a0", ""));
 		
 		// Scrape bid(delayed)
-		String bid_delayed = scrapeAAStockElement(doc,"ul:contains(Bid(Delayed)) + ul>li");
+		String bid_delayed = scrapeAAStockElement(doc,"div:contains(Bid(Delayed)) + div + div",0);
 
 		// Scrape ask(delayed)
-		String ask_delayed = scrapeAAStockElement(doc,"ul:contains(Ask(Delayed)) + ul>li");
+		String ask_delayed = scrapeAAStockElement(doc,"div:contains(Ask(Delayed)) + div + div",0);
 
 		// Scrape High
-		String high = scrapeAAStockElement(doc,"ul:contains(high) + ul>li");
+		String high = scrapeAAStockElementBySplit(doc,"div:contains(Range) + div + div",0," - ",0);
+
 
 		// Scrape low
-		String low = scrapeAAStockElement(doc,"ul:matches(Low) + ul>li");
+		String low = scrapeAAStockElementBySplit(doc,"div:contains(Range) + div + div",0," - ",1);
 
 		// Scrape Open
-		String open = scrapeAAStockElement(doc,"ul:contains(Open) + ul>li");
+		String open = scrapeAAStockElementBySplit(doc,"div:contains(Prev. Close/Open) + div + div",0," / ",1);
 
 		// Scrape Prev Close
-		String prev_close = scrapeAAStockElement(doc,"ul:contains(Prev Close) + ul>li");
-		
+		String prev_close =scrapeAAStockElementBySplit(doc,"div:contains(Prev. Close/Open) + div + div",0," / ",0);
+ 
+				
 		// Scrape Volume
-		String volume = scrapeAAStockElement(doc,"ul:matches(Volume) + ul>li");
+		String volume = scrapeAAStockElement(doc,"div#VolumeValue",0);
 		
 		// Scrape Turnover
-		String turnover = scrapeAAStockElement(doc,"ul:matches(Turnover) + ul>li");
+		String turnover = scrapeAAStockElement(doc,"div:contains(Turnover) + div + div",0);
 		
 		// Scrape Spread
-		String spread = scrapeAAStockElement(doc,"td:matches(Spread) + td");
+		String spread = scrapeAAStockElement(doc,"div:contains(Spread) + div",0);
 		
 		// Scrape Spread
-		String peRatio = scrapeAAStockElement(doc,"td:matches(P/E Ratio) + td");
+		String peRatio = scrapeAAStockElement(doc,"div:contains(P/E Ratio) + div",1);
 		
 		// Scrape Yield
-		String yield = scrapeAAStockElement(doc,"td:matches(Yield) + td");
+		String yield = scrapeAAStockElement(doc,"div:contains(Yield) + div",1);
 		
 		// Scrape Dividend Payout
-		String dividend_payout = scrapeAAStockElement(doc,"td:matches(Dividend Payout) + td");
+		String dividend_payout = scrapeAAStockElementBySplit(doc,"div:contains(Dividend Payout) + div + div",0," / ",0);
 
 		// Scrape EPS
-		String eps = scrapeAAStockElement(doc,"td:matches(EPS) + td");
+		String eps = scrapeAAStockElement(doc,"div:contains(EPS) + div + div + div",0);
 
 		// Scrape Market Cap
-		String market_cap = scrapeAAStockElement(doc,"td:matches(Market Cap) + td");
+		String market_cap = scrapeAAStockElement(doc,"div:contains(Mkt Cap.) + div",0);
 		
 		// Scrape Market Cap
-		String nav = scrapeAAStockElement(doc,"td:matches(NAV) + td");
+		String nav = scrapeAAStockElement(doc,"div:contains(P/B Ratio) + div",0);
+
 		
 		// Scrape dividend per share
-		String dps = scrapeAAStockElement(doc,"td:matches(DPS) + td>span" );
+		String dps = scrapeAAStockElementBySplit(doc,"div:contains(DPS) + div + div",0," / ",1);
 
+		// Scrape Short Sell Turnover
+		String shortSellTurnover = scrapeAAStockElementBySplit(doc,"div:contains(Short Sell Turn.) + div+div",0," / ",0);
+		
+		// Scrape Short Sell Ratio
+		String shortSellRatio = scrapeAAStockElementBySplit(doc,"div:contains(Short Sell Turn.) + div+div",0," / ",1);
+
+		
+		// Scrape Short Sell Ratio(%)
+		
 		// Scrape 1 month range, 2 month range, 3 month range, 52 week range, Rate Ratio, Volume Ratio
-		String oneMonthRange = scrapeAAStockElement(doc,"ul:matches(1 Month Range) + ul>li");
-		String twoMonthRange = scrapeAAStockElement(doc,"ul:matches(2 Month Range) + ul>li");
-		String threeMonthRange = scrapeAAStockElement(doc,"ul:matches(3 Month Range) + ul>li");
-		String fiftyTwoWeekRange = scrapeAAStockElement(doc,"ul:matches(52 Week Range) + ul>li");
-		String rateRatio = scrapeAAStockElement(doc,"ul:matches(Rate Ratio) + ul>li");
-		String volumeRatio = scrapeAAStockElement(doc,"ul:matches(Volume Ratio) + ul>li");
+		String oneMonthRange = scrapeAAStockElement(doc,"td:matches(1 Month) + td",0);
+		String twoMonthRange = scrapeAAStockElement(doc,"td:matches(2 Month) + td",0);
+		String threeMonthRange = scrapeAAStockElement(doc,"td:matches(3 Month) + td",0);
+		String fiftyTwoWeekRange = scrapeAAStockElement(doc,"td:matches(52 Week) + td",0);
+		String rateRatio = scrapeAAStockElementBySplit(doc,"div:contains(Vol./Rate Ratio)+div:eq(1)",1," / ",1);
+		String volumeRatio = scrapeAAStockElementBySplit(doc,"div:contains(Vol./Rate Ratio)+div:eq(1)",1," / ",0);
 
 		// Scrape SMA 10, 20, 50, 100, 250
-		String sma10 = scrapeAAStockElement(doc,"div:contains(SMA 10) + div");
-		String sma20 = scrapeAAStockElement(doc,"div:contains(SMA 20) + div");
-		String sma50 = scrapeAAStockElement(doc,"div:contains(SMA 50) + div");
-		String sma100 = scrapeAAStockElement(doc,"div:contains(SMA 100) + div");
-		String sma250 = scrapeAAStockElement(doc,"div:contains(SMA 250) + div");
+		String sma10 = scrapeAAStockElement(doc,"td:matches(SMA 10) + td",0);
+		String sma20 = scrapeAAStockElement(doc,"td:matches(SMA 10) + td",0);
+		String sma50 = scrapeAAStockElement(doc,"td:matches(SMA 50) + td",0);
+		String sma100 = scrapeAAStockElement(doc,"td:matches(SMA 100) + td",0);
+		String sma250 = scrapeAAStockElement(doc,"td:matches(SMA 250) + td",0);
 
 		// Scrape RSI 10,14,20
-		String rsi10 = scrapeAAStockElement(doc,"div:contains(rsi 10) + div");
-		String rsi14 = scrapeAAStockElement(doc,"div:contains(rsi 14) + div");
-		String rsi20 = scrapeAAStockElement(doc,"div:contains(rsi 20) + div");
+		String rsi10 = scrapeAAStockElement(doc,"td:matches(RSI 10) + td",0);
+		String rsi14 = scrapeAAStockElement(doc,"td:matches(RSI 14) + td",0);
+		String rsi20 = scrapeAAStockElement(doc,"td:matches(RSI 20) + td",0);
 
 		// Scrape MACD(8/17), MACD(12/25)
-		String macd8_17 = scrapeAAStockElement(doc,"div:contains(MACD(8/17 Day)) + div");
-		String macd12_25 = scrapeAAStockElement(doc,"div:contains(MACD(12/25 Day)) + div");
+		String macd8_17 = scrapeAAStockElement(doc,"td:matches(MACD\\(8/17 days\\)) + td",0);
+		String macd12_25 = scrapeAAStockElement(doc,"td:matches(MACD\\(12/25 days\\)) + td",0);
+		
+		String industry = scrapeAAStockElement(doc,"a#cp_lnkIndustry",0);
 		
 		// Scrape Last Update time
-		Elements lastUpdateTime = doc.select("font:contains(Last Update) + font");
-		Elements suspension = doc.select("font:contains(Suspension)");
+		String lastUpdateTime = scrapeAAStockElementBySplit(doc,"div:contains(Updated)>span",0,"Updated:",1);
+		Elements suspension = doc.select("div#cp_pSuspension");
+		System.out.println("Suspension:"+ (suspension.isEmpty()) +";;;");
 		String lastUpdate;
-		if(suspension.text().contains("Suspension")){
+		if(!suspension.isEmpty() && suspension.text().contains("Suspension")){
 			lastUpdate = "Suspension";
 		} else{
-			lastUpdate = lastUpdateTime.get(0).ownText();
+			lastUpdate = lastUpdateTime;
 		}
 		
-		//System.out.println("Trade: " + stockName + ", cp: " + cp + ", lot size:" + ls + ", last Update: " + lastUpdate);
+		System.out.println("Trade: " + stockName + ", cp: " + scrape1.get(0) + ", lot size:" + ls + ", last Update: " + lastUpdate);
 		//stockName, currentPrice, posNegForLast, lotSize, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividendPayout, eps, marketCap, nav, dps, bid_delayed, ask_delayed, high, low, open, prev_close, volume, turnover, oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25
 
-		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps, bid_delayed, ask_delayed, high, low,open, prev_close, volume, turnover, 		oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25);
+		return new StockScrapedInfo(stockName, cp, posNegForLast,ls, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividend_payout,eps, market_cap, nav, dps, bid_delayed, ask_delayed, high, low,open, prev_close, volume, turnover, oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25, shortSellTurnover , shortSellRatio, industry);
 	}
 
-	public default String scrapeAAStockElement(Document doc, String lookupQuery){
+	public default String scrapeAAStockElement(Document doc, String lookupQuery, int i){
 		Elements elements = doc.select(lookupQuery);
-		//System.out.println(lookupQuery + ": " + elements.get(0).ownText());
-		return  elements.get(0).ownText();
-		
+		String str = elements.get(i).text().replaceAll("^\\s+|\\s+$|\u00a0", "");
+		//System.out.println(lookupQuery + ":" + str +";;;");
+		return  str;		
 	}
 	
+	public default String scrapeAAStockElementBySplit(Document doc, String lookupQuery, int i ,String regex, int j){
+		Elements elements = doc.select(lookupQuery);
+		if(elements.get(i).text().replaceAll("^\\s+|\\s+$|\u00a0", "").matches("N/A")){
+			return elements.get(i).text().replaceAll("^\\s+|\\s+$|\u00a0", "");
+		} else{
+			String[] strings = elements.get(i).text().split(regex);
+			String str = strings[j].replaceAll("^\\s+|\\s+$|\u00a0", "");
+			//System.out.println(lookupQuery + ":" + str+";;;");
+			return  str;
+		}
+	}
 	
 	 public default StockScrapedInfo getDataFromEtnet(String ticker) throws Exception{
 			String[] userAgentStr = new String[]{
@@ -338,7 +364,7 @@ public interface StockScraping{
 			String last_updated_time = scrapeEtnetStkDividendStkDetailTimeElement(doc2, "div#StkDetailTime",0);
 			String stockName = scrapeEtnetStkNameElement(doc2,"div#StkQuoteHeader");
 			//stockName, currentPrice, posNegForLast, lotSize, lastUpdate, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, dividendPayout, eps, marketCap, nav, dps, bid_delayed, ask_delayed, high, low, open, prev_close, volume, turnover, oneMonthRange, twoMonthRange, threeMonthRange, fiftyTwoWeekRange, rateRatio, volumeRatio, sma10, sma20, sma50, sma100, sma250, rsi10, rsi14, rsi20, macd8_17, macd12_25
-			return new StockScrapedInfo(stockName ,cp, posNegForLast, board_lot, last_updated_time, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, "", eps, marketCap,nbv_per_share, dps, bid,ask, high,low, prev_close, volume, turnover,  one_month_low + " - "+ one_month_high, "","",fifty_two_week_low + " - " + fifty_two_week_high, "", "",sma10, sma20, sma50, "", sma250, "", rsi14,"", "","", ""  );
+			return new StockScrapedInfo(stockName ,cp, posNegForLast, board_lot, last_updated_time, chg, posNegForChg, chgPercent, posNegForChgPercent, spread, peRatio, yield, "", eps, marketCap,nbv_per_share, dps, bid,ask, high,low, prev_close, volume, turnover,  one_month_low + " - "+ one_month_high, "","",fifty_two_week_low + " - " + fifty_two_week_high, "", "",sma10, sma20, sma50, "", sma250, "", rsi14,"", "","", "","","" );
 	 
 	 }
 	 
