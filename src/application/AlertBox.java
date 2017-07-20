@@ -26,7 +26,8 @@ public class AlertBox {
 	           cancelButton.fire();
 	           ev.consume(); 
 	    });
-		VBox layout = new VBox();
+		VBox layout = new VBox(20);
+		layout.setPadding(new Insets(20,5,20,5));
 		layout.getChildren().addAll(label,cancelButton);
 		layout.setAlignment(Pos.CENTER);
 		

@@ -7,6 +7,8 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import javafx.util.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -32,15 +34,21 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
-import java.io.Serializable;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
 public class WatchListStock implements Serializable, StockScraping{
+	
+	private static final long serialVersionUID = 2L;
+
 	private StringProperty stockTicker;
 	private DoubleProperty target;
 	private final ReadOnlyDoubleWrapper currentPrice;
     private final ReadOnlyStringWrapper stockName;
 	private StringProperty condition;
 	private ReadOnlyBooleanWrapper alert;
+	private StringProperty remarks;
+
 
     private final ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -56,11 +64,24 @@ public class WatchListStock implements Serializable, StockScraping{
 
 	public WatchListStock(String condition, String stockTicker, double target){
 
+		this.remarks = new SimpleStringProperty("");
 		this.condition = new SimpleStringProperty(condition);
 		this.stockTicker = new SimpleStringProperty(stockTicker);
 		this.target = new SimpleDoubleProperty(target);
-		stockService.setPeriod(Duration.seconds(120));
+		Random rn = new Random();
+		int sec = (30 + rn.nextInt((180-30)+1));
+    	System.out.println("WL random time !!!!!!!!!!!!!!!!!       " + sec + "   "  + LocalDateTime.now());
+		stockService.setPeriod(Duration.seconds(sec));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
+		stockService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+		     @Override
+		     public void handle(WorkerStateEvent t) {
+		 		Random rn = new Random();
+				int sec = (30 + rn.nextInt((180-30)+1));
+		    	System.out.println("WL setOnSucceeded!!!!!!!!!!!!!!!!!       " + sec + "   "  +LocalDateTime.now());
+				stockService.setPeriod(Duration.seconds(sec));
+		     }
+		});
 		
 		this.currentPrice = new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
@@ -97,6 +118,14 @@ public class WatchListStock implements Serializable, StockScraping{
 		
 		startMonitoring();
 
+	}
+	
+	public WatchListStock(WatchListStockProxy wlsProxy) {
+		this(	wlsProxy.condition,
+				wlsProxy.stockTicker,
+				wlsProxy.target
+			);
+		this.setRemarks(wlsProxy.remarks);
 	}
 	
 	// getters
@@ -169,6 +198,18 @@ public class WatchListStock implements Serializable, StockScraping{
 		return stockNameProperty().get();
 	}	
 	
+	public String getRemarks(){
+		return this.remarks.getValue();
+	}
+	
+	public StringProperty remarksProperty(){
+		return this.remarks;
+	}
+	
+	public void setRemarks(String remarks){
+		this.remarks.set(remarks);
+	}
+	
 	// multi-threading
 	public final void startMonitoring() {
 		stockService.restart();
@@ -183,5 +224,45 @@ public class WatchListStock implements Serializable, StockScraping{
 				", Target price: " + getTarget() + 
 				", alert: " + getAlert() + 
 				", condition: " + getCondition();
+	}
+	
+
+	private Object writeReplace() {
+	    return new WatchListStockProxy(this);
+	}
+	
+	private void readObject(ObjectInputStream stream)
+	        throws InvalidObjectException {
+	    throw new InvalidObjectException("Proxy required");
+
+	}
+	
+	/*
+	 * Serialization Proxy
+	 * 
+	 * String condition, String stockTicker, double target
+	 * */
+	private static class WatchListStockProxy implements Serializable{
+		private static final long serialVersionUID = 2L;
+
+		private String condition;
+		private String stockTicker;
+		private double target;
+		private String remarks;
+
+		private WatchListStockProxy(WatchListStock wls){
+			this.condition = wls.getCondition();
+			this.stockTicker = wls.getStockTicker();
+			this.target = wls.getTarget();
+			this.remarks = wls.getRemarks();
+		}
+		
+		private void writeObject(ObjectOutputStream s ) throws IOException{
+			s.defaultWriteObject();
+		}
+		
+		private Object readResolve() throws ObjectStreamException{
+			return new WatchListStock(this);
+		}
 	}
 }

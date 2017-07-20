@@ -11,18 +11,23 @@ import javafx.fxml.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.application.Application;
+import javafx.application.Platform;
+
 import java.net.URL;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.time.LocalDate;
+import javafx.scene.paint.Color;
 import java.io.File;
 import java.io.IOException;
 import java.lang.*;
 import javafx.scene.control.cell.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.collections.*;
 import javafx.scene.control.MultipleSelectionModel.*;
 import javafx.scene.control.SelectionModel.*;
@@ -44,8 +49,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.ObjectExpression;
 import javafx.beans.binding.StringExpression;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -75,11 +83,17 @@ import javafx.util.StringConverter;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
+import com.gargoylesoftware.htmlunit.javascript.host.dom.Text;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+
 public class Controller implements Initializable{
 	
 	@FXML
-
 	// History Log 
+	public Stage primaryStage;
 	public TableView<Trade> fxTransactionLog;
 	public TableColumn<Trade, LocalDate> fxTransactionLogTransactionDate;
 	public TableColumn<Trade, String> fxTransactionLogStockTicker;
@@ -90,21 +104,11 @@ public class Controller implements Initializable{
 	public TableColumn<Trade,Number> fxTransactionLogCurrentPrice;
 	public TableColumn<Trade,String> fxTransactionLogRemarks;
 	public TableColumn<Trade,String> fxTransactionLogStockName;
+	public TableColumn<Trade,String> fxTransactionLogPortfolio;
 	
 	// Consolidated Trades
-	public TableView<ConsolidatedTrade> fxPortfolio;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioTicker;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioAvgPrice;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioVolumeHeld;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioVolumeSold;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioTarget;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioStopLoss;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioCurrentPrice;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioUPnL;
-	public TableColumn <ConsolidatedTrade, Number> fxPortfolioPnL;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioPosition;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioPnLHistory;
-	public TableColumn <ConsolidatedTrade, String> fxPortfolioStockName;
+	public TabPane fxTabPaneUpper;
+
 
 	// WatchList
 	public TableView<WatchListStock> fxWatchList;
@@ -118,14 +122,29 @@ public class Controller implements Initializable{
     public StockLookUp lookUpTicker;
     
     // Button
+    public MoreInfoDisplayBox midb;
+
+    
 	// Label
-    public Label fxLabel1;
-    public Label fxLabel2;
+    public Label fxStockNameLabel;
+    public Label fxLastLabel;
+    public Label labelLotVal;
+    public Label fxLastUpdateLabel;
+    public Label fxChgLabel;
+    public Label fxChgPercentLabel;
+    public Label labelSpreadVal;
+    public Label labelPeRatioVal;
+    public Label labelYieldVal;
+    public Label labelDividendPayoutVal;
+    public Label labelEpsVal;
+    public Label labelMarketCapVal;
+    public Label labelNavVal;
+    public Label labelDpsVal;
+    public Label labelShortSellTurnoverVal;
+    public Label labelShortSellRatioVal;
+    public Label labelIndustryVal;
     public Label fxLabel3;
     public Label fxLabel4;
-    public Label fxLabel5;
-    public Label fxLabel6;
-
 
     // Tab pane
     public TabPane fxTabPaneLower;
@@ -137,12 +156,21 @@ public class Controller implements Initializable{
 	public HBox fxWatchListPanel;
 	// MenuBar
 	public MenuBar fxMenuBar;
-	public TreeView<String> fxFileTree;
-	
+	public ComboBox<String> portfolioComboBox;
+	public GridPane gridPane;
+
     private Pattern partialInputPattern = Pattern.compile("[-]?[0-9]*(\\.[0-9]*)?");
 	
 	private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 	
+	// HashMap for storing and keep track of stock ticker and target / stop loss relationship
+	HashMap<String,Double> ctTickerTargetMap = new HashMap<String,Double>();
+	HashMap<String,Double> ctTickerStopLossMap = new HashMap<String,Double>();
+
+	// Save
+	BooleanProperty saved = new SimpleBooleanProperty();
+	InvalidationListener savedListener = obs -> saved.set(false);
+
 	
     /**
      * The data as an observable list of Trade.
@@ -155,7 +183,8 @@ public class Controller implements Initializable{
 				trade.volumeProperty(),
 				//trade.stockNameProperty(),
 				trade.priceProperty(),
-				trade.currentPriceProperty()
+				trade.currentPriceProperty(),
+				trade.portfolioProperty()
 
 		}
 	);
@@ -290,8 +319,9 @@ public class Controller implements Initializable{
 		TableColumn<Trade, Number> filterTableTransactionFee = new TableColumn("Transaction Fee");
 		TableColumn<Trade, Number> filterTableCurrentPrice = new TableColumn("Last");
 		TableColumn<Trade, String> filterTableRemarks = new TableColumn("Remarks");
-
-		filterTable.getColumns().addAll(filterTableTransactionDate,filterTableStockName,filterTableStockTicker,filterTableBuySell,filterTablePrice,filterTableVolume,filterTableTransactionFee,filterTableCurrentPrice,filterTableRemarks);
+		TableColumn<Trade,String> filterTablePortfolio = new TableColumn("Portfolio"); 
+		
+		filterTable.getColumns().addAll(filterTableTransactionDate,filterTableStockName,filterTableStockTicker,filterTableBuySell,filterTablePrice,filterTableVolume,filterTableTransactionFee,filterTableCurrentPrice,filterTableRemarks,filterTablePortfolio);
 		
 		
 		// define setCellValueFactory
@@ -304,11 +334,13 @@ public class Controller implements Initializable{
 		filterTableTransactionFee.setCellValueFactory(cellData -> cellData.getValue().transactionFeeProperty());
 		filterTableCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
 		filterTableRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
-		
+		filterTablePortfolio.setCellValueFactory(cellData -> cellData.getValue().portfolioProperty());
+
 		// define setCellFactory
 		filterTableTransactionDate.setCellFactory(col -> new DateEditingCell());
 		filterTableStockTicker.setCellFactory(col -> new EditingStockTickerCell<Trade>(""));
 		filterTablePrice.setCellFactory(col -> new EditingNumberCell<Trade>("price-cell"));
+
 		filterTableVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		filterTableTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
 		filterTableRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -340,21 +372,27 @@ public class Controller implements Initializable{
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setStockTicker(t.getNewValue());
 					}
 				});
+		setPortfolioComboBoxItems();
+		filterTablePortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));
+	
 		
 	}
 	
 	// initialise fxTransactionLog 
 	public void initializeFxTransactionLog(){	
-		observableListOfTrades.addAll(
-				new Trade(BuySell.Buy, LocalDate.now().plusDays(3),"1",50,5)
-				//,new Trade(BuySell.Sell, LocalDate.now().plusDays(1), 1,25,3),
-				//new Trade(BuySell.Sell, LocalDate.now().plusDays(4), 1,50,3),
-				//new Trade(BuySell.Sell, LocalDate.now().plusDays(2),1,100,3),
-				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2),
-				//new Trade(BuySell.Sell, LocalDate.now(),1,10000,9999),
-				//new Trade(BuySell.Buy, LocalDate.now(),1,100,2)
-		);
 		
+		observableListOfTrades.addAll(
+				new Trade("Buy", LocalDate.now().minusDays(100),"1113",13680,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"1",13680,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"293",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"4",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"1972",10000,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"5",23183,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"3",91310,0,"My Portfolio")
+				,new Trade("Buy", LocalDate.now().minusDays(100),"941",20000,0,"My Portfolio")
+				//,new Trade("Buy", LocalDate.now().minusDays(100),"533",0,0,"abc")
+
+		);
 		
 		// Add listener to observable list to listen to ALL changes
 		observableListOfTrades.addListener(new ListChangeListener<Trade>() {
@@ -365,6 +403,7 @@ public class Controller implements Initializable{
 				for(Trade ttt : observableListOfTrades){
 					System.out.println( "Change: " + ttt);
 				}
+				
 				SortedList<Trade> sortedTrades = new SortedList<Trade>(observableListOfTrades);
 				sortedTrades.setComparator(new Comparator<Trade>(){
 					@Override
@@ -374,6 +413,8 @@ public class Controller implements Initializable{
 				});
 				fxTransactionLog.setItems(sortedTrades);
 
+				setPortfolioComboBoxItems();
+				fxTransactionLogPortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));				
 				refreshPortfolio();
 				//initialPortfolio.displayDataStructure();
 				//initialPortfolio.getConsolidatedTrades();
@@ -406,6 +447,9 @@ public class Controller implements Initializable{
 		fxTransactionLogRemarks.setCellValueFactory(cellData -> cellData.getValue().remarksProperty());
 		fxTransactionLogCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
 		fxTransactionLogStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
+		fxTransactionLogPortfolio.setCellValueFactory(cellData -> cellData.getValue().portfolioProperty());
+		//fxTransactionLogPortfolio.setCellValueFactory(new PropertyValueFactory<Trade, String>("portfolio"));
+
 		
 		// define setCellFactory
 		fxTransactionLogTransactionDate.setCellFactory(col -> new DateEditingCell());
@@ -414,7 +458,7 @@ public class Controller implements Initializable{
 	    fxTransactionLogVolume.setCellFactory(col -> new EditingNumberCell<Trade>(""));
 		fxTransactionLogTransactionFee.setCellFactory(col -> new NonEditableNumberCell<Trade>());				
 		fxTransactionLogRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
-
+		
 		// initialise buySell choicebox
 		ObservableList<String> buySellList = FXCollections.observableArrayList(new String("Buy"), new String("Sell"));
 		fxTransactionLogBuySell.setCellFactory(ChoiceBoxTableCell.forTableColumn(buySellList));
@@ -423,7 +467,7 @@ public class Controller implements Initializable{
 					@Override
 					public void handle(CellEditEvent<Trade, String> t) {
 						((Trade) t.getTableView().getItems().get(t.getTablePosition().getRow())).setBuySell(t.getNewValue());
-		                filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(""));
+		                //filterListOfTrades.setPredicate(trade -> trade.getStockTicker().equals(""));
 
 					}
 				});
@@ -479,6 +523,27 @@ public class Controller implements Initializable{
 
 		
 		// initialise transaction fee
+
+		setPortfolioComboBoxItems();
+		//fxTransactionLogPortfolio.setCellFactory(ComboBoxTableCell.forTableColumn(portfolioComboBox.getItems()));
+		
+		fxTransactionLogPortfolio.setCellFactory(tablecol -> {
+           ComboBoxTableCell<Trade,String> ct= new ComboBoxTableCell<Trade,String>();
+           ct.getItems().addAll(portfolioComboBox.getItems());
+           ct.setComboBoxEditable(true);
+           return ct;
+        });
+        
+		
+		/*
+    	fxTransactionLogPortfolio.setCellFactory(new Callback<TableColumn<Trade, String>, TableCell<Trade, String>>(){
+            @Override
+            public TableCell<Trade, String> call(TableColumn<Trade, String> param) {
+                return new LiveComboBoxTableCell<>(testing);
+            }
+		});
+		*/
+		
 		
 		// Drag and Drop TableRow
 		/*
@@ -604,6 +669,16 @@ public class Controller implements Initializable{
 	// initialise Portfolio
 	public void initializeFXPortfolio(){
 		refreshPortfolio();
+		// Add listener to observable list to listen to ALL changes
+		observableListOfConsolidatedTrades.addListener(new ListChangeListener<ConsolidatedTrade>() {
+		    @Override
+		    public void onChanged(ListChangeListener.Change change) {
+				ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
+				ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
+	
+		    }
+		});
+		
 		/*
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
 		sortedTrades.setComparator(new Comparator<ConsolidatedTrade>(){
@@ -615,32 +690,7 @@ public class Controller implements Initializable{
 		
 		fxPortfolio.setItems(sortedTrades);
 		*/
-		
-		// define setCellValueFactory
-		fxPortfolioTicker.setCellValueFactory(cellData -> cellData.getValue().stockTickerProperty());
-		fxPortfolioAvgPrice.setCellValueFactory(cellData -> cellData.getValue().avgPriceProperty());
-		fxPortfolioVolumeHeld.setCellValueFactory(cellData -> cellData.getValue().volumeHeldProperty());
-		fxPortfolioVolumeSold.setCellValueFactory(cellData -> cellData.getValue().volumeSoldProperty());
-		fxPortfolioTarget.setCellValueFactory(cellData -> cellData.getValue().targetProperty());
-		fxPortfolioStopLoss.setCellValueFactory(cellData -> cellData.getValue().stopLossProperty());
-		fxPortfolioCurrentPrice.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
-		fxPortfolioUPnL.setCellValueFactory(cellData -> cellData.getValue().uPnlProperty());
-		fxPortfolioPnL.setCellValueFactory(cellData -> cellData.getValue().pnlProperty());
-		fxPortfolioPosition.setCellValueFactory(cellData -> cellData.getValue().positionProperty());
-		fxPortfolioPnLHistory.setCellValueFactory(new PropertyValueFactory<ConsolidatedTrade,String>("pnl_i"));
-		fxPortfolioStockName.setCellValueFactory(cellData -> cellData.getValue().stockNameProperty());
-		// define setCellFactory
-		fxPortfolioAvgPrice.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioVolumeHeld.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioVolumeSold.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioTarget.setCellFactory(col -> new EditingNumberCell<ConsolidatedTrade>("target-cell"));
-		fxPortfolioStopLoss.setCellFactory(col -> new EditingNumberCell<ConsolidatedTrade>("stopLoss-cell"));
-		//fxPortfolioCurrentPrice.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioUPnL.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>("uPnl-cell"));
-		fxPortfolioPnL.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>("pnl-cell"));
-		fxPortfolioPnLHistory.setCellFactory(TextFieldTableCell.forTableColumn());
-		//fxPortfolioPosition.setCellFactory(col -> new NonEditableNumberCell<ConsolidatedTrade>());
-		fxPortfolioTicker.setCellFactory(col -> new NonEditableStockTickerCell<ConsolidatedTrade>());
+
 		
 		/*****************************************************
 		 *	Table row highlighting for newly added trade
@@ -651,7 +701,7 @@ public class Controller implements Initializable{
 		 *  Most of the time this will be null but when a new Trade is added to the list, 
 		 *  it will be set to that new Trade:
 		 */
-		final ObjectProperty<ConsolidatedTrade> recentlyAddedTrade = new SimpleObjectProperty<>();
+		//final ObjectProperty<ConsolidatedTrade> recentlyAddedTrade = new SimpleObjectProperty<>();
 		/*
 		 * 2. Register a ListListener with the table's items list. 
 		 * When a new item is added to the list, update the recentlyAddedTrade. 
@@ -660,6 +710,7 @@ public class Controller implements Initializable{
 		 * some delay (a second or two).:
 		 */
 		
+		/*
 		final Duration timeToGetOld = Duration.seconds(1.0);
 		fxPortfolio.getItems().addListener((Change<? extends ConsolidatedTrade> change) ->{
 			while(change.next()){
@@ -681,7 +732,10 @@ public class Controller implements Initializable{
 		});
 		
 		
-		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::stockTickerProperty, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty, observableListOfTrades, filterListOfTrades, fxTabPaneLower));
+		fxPortfolio.setRowFactory(tableView -> new AnimatedPortfolioTableRow<>(recentlyAddedTrade, ConsolidatedTrade::stockTickerProperty, ConsolidatedTrade::targetCautionProperty, ConsolidatedTrade::stopLossCautionProperty, ConsolidatedTrade::uPnlStateProperty, ConsolidatedTrade::pnlStateProperty, 
+				//observableListOfTrades, 
+				filterListOfTrades, fxTabPaneLower));
+		*/
 	}
 	
 	// refresh Portfolio whenever there is any change in the Transaction Log
@@ -694,9 +748,11 @@ public class Controller implements Initializable{
 		}
 		
 		// Create a new portfolio whenever there is any change, which will also start monitoring currentPriceProperty().
-        initialPortfolio = new Portfolio(observableListOfTrades, observableListOfConsolidatedTrades);
-        fxPortfolio.setEditable(true);
-		
+        initialPortfolio = new Portfolio(observableListOfTrades, observableListOfConsolidatedTrades
+        		,ctTickerTargetMap, ctTickerStopLossMap
+        		);
+        //fxPortfolio.setEditable(true);
+		/*
         SortedList<ConsolidatedTrade> sortedTrades = new SortedList<ConsolidatedTrade>(initialPortfolio.getConsolidatedTrades());
 		sortedTrades.setComparator(new Comparator<ConsolidatedTrade>(){
 			@Override
@@ -704,24 +760,44 @@ public class Controller implements Initializable{
 				return trade1.compareTo(trade2);
 			}
 		});
-		
+		*/
+		//fxPortfolio.setItems(sortedTrades);
+        for(String portfolioName : initialPortfolio.getUniquePortfolioSet()){
+        	new PortfolioTable(fxTabPaneUpper, initialPortfolio.getConsolidatedTrades(), portfolioName , filterListOfTrades, fxTabPaneLower);
+        }
+        
+		ctTickerTargetMap = initialPortfolio.getCtTickerTargetMap();
+		ctTickerStopLossMap = initialPortfolio.getCtTickerStopLossMap();
+		/*
+		for (Map.Entry<String, Double> entry : ctTickerTargetMap.entrySet())
+		{
+		    System.out.println("Target HashMap: " + entry.getKey() + "/" + entry.getValue());
+		}
+		for (Map.Entry<String, Double> entry : ctTickerStopLossMap.entrySet())
+		{
+		    System.out.println("StopLoss HashMap: " + entry.getKey() + "/" + entry.getValue());
+		}
+		*/
+		/*
 		System.out.println("***************");
 		//initialPortfolio.displayDataStructure();
-
-		fxPortfolio.setItems(sortedTrades);
 		System.out.println("Item still in Transaction Log: ");
 		for(Trade ttt : fxTransactionLog.getItems()){
 		//for(Trade ttt : observableListOfTrades){
 			System.out.println( "Change: " + ttt);
-		}		
+		}
+		*/
+
+        removeEmptyTabs();
 	}
 
 	// initialise fxWatchList 
 	public void initializeFxWatchList(){	
+		/*
 		observableListOfWatchListStocks.addAll(
-				new WatchListStock("Last >= Target","1",23.0)
+				new WatchListStock("Last >= Target","1",123.0)
 		);
-		
+		*/
 		fxWatchList.setItems(observableListOfWatchListStocks);
 	
 		fxWatchList.setEditable(true);
@@ -883,6 +959,167 @@ public class Controller implements Initializable{
 		
 	}
 	
+	// initialize Grid Pane
+	public void initializeGridPane(){
+		gridPane = new GridPane();
+		//gridPane.setGridLinesVisible(true);
+		gridPane.setHgap(10);
+		gridPane.setVgap(10);
+		gridPane.setPadding(new Insets(5,5,5,5));
+
+        fxStockLookUp.setContent(gridPane);
+        ColumnConstraints col0 = new ColumnConstraints(20,45,70);
+        RowConstraints row0 = new RowConstraints(12,17,22);
+        RowConstraints row1 = new RowConstraints(18,24,28);
+        RowConstraints row2 = new RowConstraints(14,19,24);
+        RowConstraints row3 = new RowConstraints(7,12,17);
+        RowConstraints row4 = new RowConstraints(11,11,13);
+
+        gridPane.getColumnConstraints().add(0,col0);
+        gridPane.getColumnConstraints().add(1,col0);
+        gridPane.getColumnConstraints().add(2,col0);
+        gridPane.getColumnConstraints().add(3,col0);
+        gridPane.getRowConstraints().add(0,row0);
+        gridPane.getRowConstraints().add(1,row1);
+        gridPane.getRowConstraints().add(2,row2);
+        gridPane.getRowConstraints().add(3,row3);
+        gridPane.getRowConstraints().add(4,row4);
+        gridPane.getRowConstraints().add(5,row4);
+        gridPane.getRowConstraints().add(6,row4);
+        gridPane.getRowConstraints().add(7,row4);
+        gridPane.getRowConstraints().add(8,row4);
+        gridPane.getRowConstraints().add(9,row4);
+        gridPane.getRowConstraints().add(10,row4);
+        gridPane.getRowConstraints().add(11,row4);
+        gridPane.getRowConstraints().add(12,row4);
+        gridPane.getRowConstraints().add(13,row4);
+        gridPane.getRowConstraints().add(14,row4);
+        gridPane.getRowConstraints().add(15,row4);
+        gridPane.getRowConstraints().add(16,row4);
+        gridPane.getRowConstraints().add(17,row4);
+        gridPane.getRowConstraints().add(18,row4);
+
+        
+        // Stock Name
+        fxStockNameLabel = new Label("Stock Name");
+        fxStockNameLabel.setFont(Font.font("Arial",FontWeight.BOLD,17));
+        gridPane.add(fxStockNameLabel, 0, 0,4,1);
+        
+        // Last
+        fxLastLabel = new Label("Last");
+        fxLastLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxLastLabel.setFont(Font.font("Arial",FontWeight.BOLD ,32));
+        gridPane.add(fxLastLabel, 0, 1,4,1);
+        GridPane.setHalignment(fxLastLabel, HPos.RIGHT);
+        
+        // Chg
+        fxChgLabel = new Label("Chg /");
+        fxChgLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxChgLabel.setFont(Font.font("Arial",FontWeight.BOLD ,14));
+        gridPane.add(fxChgLabel, 1, 2,2,1);
+        GridPane.setHalignment(fxChgLabel, HPos.LEFT);
+
+        // Chg %
+        fxChgPercentLabel = new Label("Chg %");
+        fxChgPercentLabel.setContentDisplay(ContentDisplay.LEFT);
+        fxChgPercentLabel.setFont(Font.font("Arial",FontWeight.BOLD ,14));
+        gridPane.add(fxChgPercentLabel, 2, 2,2,1);
+        GridPane.setHalignment(fxChgPercentLabel, HPos.RIGHT);
+               
+        // Last Update
+        fxLastUpdateLabel = new Label("Last Update");
+        fxLastUpdateLabel.setFont(Font.font("Arial", 12));
+        gridPane.add(fxLastUpdateLabel, 0, 3,4,1);
+        GridPane.setHalignment(fxLastUpdateLabel, HPos.RIGHT);
+
+        // Lot       
+        Label labelLotText = getTextLabel("Lot Size",HPos.LEFT);
+        gridPane.add(labelLotText, 0, 4,2,1);
+        labelLotVal = getTextLabel("",HPos.RIGHT);
+        gridPane.add(labelLotVal, 2,4,2,1);
+
+        // Spread       
+        Label labelSpreadText = getTextLabel("Spread",HPos.LEFT);
+        gridPane.add(labelSpreadText, 0, 5,2,1);
+        labelSpreadVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelSpreadVal, 2,5,2,1);
+
+        // PE Ratio       
+        Label labelPeRatioText = getTextLabel("P/E Ratio-TMM", HPos.LEFT);
+        gridPane.add(labelPeRatioText, 0, 6,2,1);
+        labelPeRatioVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelPeRatioVal, 2,6,2,1);
+
+        // Yield       
+        Label labelYieldText = getTextLabel("Yield-TMM", HPos.LEFT);
+        gridPane.add(labelYieldText, 0, 7,2,1);
+        labelYieldVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelYieldVal, 2,7,2,1);
+
+        // Dividend Payout       
+        Label labelDividendPayoutText = getTextLabel("Dividend Payout", HPos.LEFT);
+        gridPane.add(labelDividendPayoutText, 0, 8,3,1);
+        labelDividendPayoutVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelDividendPayoutVal, 2,8,2,1);
+
+        // EPS       
+        Label labelEpsText = getTextLabel("Earnings Per Share",HPos.LEFT);
+        gridPane.add(labelEpsText, 0, 9,3,1);
+        labelEpsVal = getTextLabel("",HPos.RIGHT);
+        gridPane.add(labelEpsVal, 2,9,2,1);
+        
+        // Market Cap       
+        Label labelMarketCapText = getTextLabel("Market Cap", HPos.LEFT);
+        gridPane.add(labelMarketCapText, 0, 10,2,1);
+        labelMarketCapVal = getTextLabel("",HPos.RIGHT);
+        gridPane.add(labelMarketCapVal, 2,10,2,1);
+        
+        // NAV       
+        Label labelNavText = getTextLabel("P/B Ratio / NAV", HPos.LEFT);
+        gridPane.add(labelNavText, 0, 11,2,1);
+        labelNavVal = getTextLabel("",HPos.RIGHT);
+        gridPane.add(labelNavVal, 2,11,2,1);
+        
+        // DPS   
+        Label labelDpsText = getTextLabel("Dividend/share", HPos.LEFT);
+        gridPane.add(labelDpsText, 0, 12,3,1);
+        labelDpsVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelDpsVal, 2,12,2,1);
+        
+        // Short Sell Turnover  
+        Label labelShortSellTurnoverText = getTextLabel("Short Sell Turnover", HPos.LEFT);
+        gridPane.add(labelShortSellTurnoverText, 0, 13,3,1);
+        labelShortSellTurnoverVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelShortSellTurnoverVal, 2,13,2,1);
+  
+        // Short Sell Ratio   
+        Label labelShortSellRatioText = getTextLabel("Short Sell Ratio", HPos.LEFT);
+        gridPane.add(labelShortSellRatioText, 0, 14,3,1);
+        labelShortSellRatioVal = getTextLabel("", HPos.RIGHT);
+        gridPane.add(labelShortSellRatioVal, 2,14,2,1);
+  
+        // Industry  
+        Label labelIndustryText = getTextLabel("Industry", HPos.LEFT);
+        gridPane.add(labelIndustryText, 0, 15,3,1);
+        labelIndustryVal = getTextLabel("", HPos.RIGHT);
+        labelIndustryVal.setFont(Font.font("Arial", 10));
+        gridPane.add(labelIndustryVal, 2,15,2,1);
+  
+        
+        Button moreInfo = new Button("More Info");
+        gridPane.add(moreInfo, 0, 17,4,1);
+        GridPane.setHalignment(moreInfo,HPos.CENTER);
+        midb = new MoreInfoDisplayBox();
+        moreInfo.setOnAction(e -> {
+        	if(midb!=null){
+        		midb.window.show();
+        		midb.window.requestFocus();
+        	} else{
+        		midb.window.hide();       	
+        	}
+        });
+        
+	}
 
 	
 	// initialise Stock Calculator
@@ -898,6 +1135,13 @@ public class Controller implements Initializable{
 		Label labelDatePicker = new Label("Date:");
 		datepicker.setPrefWidth(130);
 
+		// Portfolio name:
+		portfolioComboBox = new ComboBox();
+		//portfolioComboBox.setItems();
+		portfolioComboBox.setEditable(true);
+		Label labelPortfolio = new Label ("Portfolio");
+		portfolioComboBox.setPrefWidth(130);
+		
 		// capture user input: StockTicker, volume, price 
 		// Stock Ticker
 		Label labelStockTicker = new Label("Ticker:");
@@ -925,21 +1169,104 @@ public class Controller implements Initializable{
         }));
 
 			
-		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(1.5), new EventHandler<ActionEvent>() {
+        Image upImg = new Image(getClass().getResourceAsStream("up.png"), 30,30,false,false);
+        Image downImg = new Image(getClass().getResourceAsStream("down.png"), 30,30,false,false);
+        Image upImgChg = new Image(getClass().getResourceAsStream("up.png"), 14,14,false,false);
+        Image downImgChg = new Image(getClass().getResourceAsStream("down.png"), 14,14,false,false);
+        Image upImgChgPercent = new Image(getClass().getResourceAsStream("up.png"), 14,14,false,false);
+        Image downImgChgPercent = new Image(getClass().getResourceAsStream("down.png"), 14,14,false,false);
+
+        ImageView upImgView = new ImageView(upImg);
+        ImageView downImgView = new ImageView(downImg);
+        ImageView upImgViewChg = new ImageView(upImgChg);
+        ImageView downImgViewChg = new ImageView(downImgChg);
+        ImageView upImgViewChgPercent = new ImageView(upImgChgPercent);
+        ImageView downImgViewChgPercent = new ImageView(downImgChgPercent);
+
+        
+        
+		Timeline delayDisplayStockInfo = new Timeline(new KeyFrame(Duration.seconds(0.5), new EventHandler<ActionEvent>() {
 			@Override
             public void handle(ActionEvent actionEvent) {
-				fxLabel2.textProperty().unbind();
-				fxLabel5.textProperty().unbind();
+				fxLastLabel.textProperty().unbind();
+				labelLotVal.textProperty().unbind();
 
 		        Locale locale  = new Locale("en", "UK");
+		        // Create stock ticker look up object
             	lookUpTicker = new StockLookUp(tfStockTicker.getText());
-            	fxLabel1.textProperty().bind(lookUpTicker.stockNameProperty());
-				fxLabel2.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));		
-				fxLabel5.textProperty().bind(Bindings.format(locale,"Lot Size: %,.0f",lookUpTicker.lotSizeProperty()));
-				fxLabel6.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
-				System.out.println("LookUP: " + tfStockTicker.getText());
-            	
-            }
+            	// stock name
+            	fxStockNameLabel.textProperty().bind(lookUpTicker.stockNameProperty());
+            	// Last
+            	fxLastLabel.textProperty().bind(Bindings.format("%,.3f", lookUpTicker.currentPriceProperty()));
+            	fxLastLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY)  )
+						);
+            	fxLastLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("pos")).then(upImgView).otherwise(
+								Bindings.when(lookUpTicker.posNegForLastProperty().isEqualTo("neg")).then(downImgView).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			);
+            	// Chg
+            	fxChgLabel.textProperty().bind(Bindings.concat(lookUpTicker.chgProperty()).concat(" / "));
+            	fxChgLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY))
+						);
+            	fxChgLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("pos")).then(upImgViewChg).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgProperty().isEqualTo("neg")).then(downImgViewChg).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			);
+            	// Chg %
+            	fxChgPercentLabel.textProperty().bind(lookUpTicker.chgPercentProperty());
+            	fxChgPercentLabel.textFillProperty().bind(
+						Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos")).then(Color.LIMEGREEN).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg")).then(Color.RED).otherwise(Color.GREY)  )
+						);
+            	fxChgPercentLabel.graphicProperty().bind(
+            			Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("pos")).then(upImgViewChgPercent).otherwise(
+								Bindings.when(lookUpTicker.posNegForChgPercentProperty().isEqualTo("neg")).then(downImgViewChgPercent).otherwise(new ImageView(new WritableImage(3,3)))  )
+            			);
+        		// Last Update
+				fxLastUpdateLabel.textProperty().bind(Bindings.concat("Last Update: ").concat(lookUpTicker.lastUpdateProperty()));
+				System.out.println("LookUP: " + tfStockTicker.getText());		
+				// Lot
+				labelLotVal.textProperty().bind(Bindings.format(locale,"%,.0f",lookUpTicker.lotSizeProperty()));
+				labelSpreadVal.textProperty().bind(lookUpTicker.spreadProperty());
+				labelPeRatioVal.textProperty().bind(lookUpTicker.peRatioProperty());
+				labelYieldVal.textProperty().bind(lookUpTicker.yieldProperty());
+				labelDividendPayoutVal.textProperty().bind(lookUpTicker.dividendPayoutProperty());
+				labelEpsVal.textProperty().bind(lookUpTicker.epsProperty());
+				labelMarketCapVal.textProperty().bind(lookUpTicker.marketCapProperty());
+				labelNavVal.textProperty().bind(lookUpTicker.navProperty());
+				labelDpsVal.textProperty().bind(lookUpTicker.dpsProperty());
+				labelShortSellTurnoverVal.textProperty().bind(lookUpTicker.shortSellTurnoverProperty());
+				labelShortSellRatioVal.textProperty().bind(lookUpTicker.shortSellRatioProperty());
+				labelIndustryVal.textProperty().bind(lookUpTicker.industryProperty());
+				midb.labelBid_delayedVal.textProperty().bind(lookUpTicker.bid_delayedProperty());
+				midb.labelAsk_delayedVal.textProperty().bind(lookUpTicker.ask_delayedProperty());
+				midb.labelHighVal.textProperty().bind(lookUpTicker.highProperty());
+				midb.labelLowVal.textProperty().bind(lookUpTicker.lowProperty());
+				midb.labelOpenVal.textProperty().bind(lookUpTicker.openProperty());
+				midb.labelPrev_closeVal.textProperty().bind(lookUpTicker.prev_closeProperty());
+				midb.labelVolumeVal.textProperty().bind(lookUpTicker.volumeProperty());
+				midb.labelTurnoverVal.textProperty().bind(lookUpTicker.turnoverProperty());
+				midb.labelOneMonthRangeVal.textProperty().bind(lookUpTicker.oneMonthRangeProperty());
+				midb.labelTwoMonthRangeVal.textProperty().bind(lookUpTicker.twoMonthRangeProperty());
+				midb.labelThreeMonthRangeVal.textProperty().bind(lookUpTicker.threeMonthRangeProperty());
+				midb.labelFiftyTwoWeekRangeVal.textProperty().bind(lookUpTicker.fiftyTwoWeekRangeProperty());
+				midb.labelRateRatioVal.textProperty().bind(lookUpTicker.rateRatioProperty());
+				midb.labelVolumeRatioVal.textProperty().bind(lookUpTicker.volumeRatioProperty());
+				midb.labelSma10Val.textProperty().bind(lookUpTicker.sma10Property());
+				midb.labelSma50Val.textProperty().bind(lookUpTicker.sma50Property());
+				midb.labelSma100Val.textProperty().bind(lookUpTicker.sma100Property());
+				midb.labelSma250Val.textProperty().bind(lookUpTicker.sma250Property());
+				midb.labelRsi10Val.textProperty().bind(lookUpTicker.rsi10Property());
+				midb.labelRsi14Val.textProperty().bind(lookUpTicker.rsi14Property());
+				midb.labelRsi20Val.textProperty().bind(lookUpTicker.rsi20Property());
+				midb.labelMacd8_17Val.textProperty().bind(lookUpTicker.macd8_17Property());
+				midb.labelMacd12_25Val.textProperty().bind(lookUpTicker.macd12_25Property());
+
+			}
         }));
 			
 		tfStockTicker.textProperty().addListener((observable, oldValue, newValue) ->{
@@ -987,12 +1314,12 @@ public class Controller implements Initializable{
 		
 		// Vertical Box stores text that prompt user:
 		VBox vb1 = new VBox();
-		vb1.getChildren().addAll(labelDatePicker,labelStockTicker, labelPrice, labelVolume);
+		vb1.getChildren().addAll(labelDatePicker,labelPortfolio,labelStockTicker, labelPrice, labelVolume);
 		vb1.setSpacing(20);
 		vb1.setAlignment(Pos.CENTER_RIGHT);
 		// Vertical Box stores user's input
 		VBox vb2 = new VBox();
-		vb2.getChildren().addAll(datepicker,tfStockTicker, tfPrice, tfVolume);
+		vb2.getChildren().addAll(datepicker,portfolioComboBox,tfStockTicker, tfPrice, tfVolume);
 		vb2.setSpacing(10);
 		
 		// horizontal box that combines vb1 and vb2 
@@ -1008,7 +1335,6 @@ public class Controller implements Initializable{
 		
 
 		Button buyButton = new Button("Buy");
-		buyButton.setTooltip(new Tooltip("Hover over me!!!!!"));
 		Button sellButton = new Button("Sell");
 		Button cancelButton = new Button("Cancel");
 		Button deleteTradeButton = new Button("Delete Trade");
@@ -1022,7 +1348,7 @@ public class Controller implements Initializable{
 		
 		// What happens when the BUY button is clicked
 		buyButton.setOnAction(e -> {
-			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true || !(portfolioComboBox.getValue()!=null)){
 				AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
 			} else{
 				//System.out.println(Double.parseDouble(tfPrice.getText()));
@@ -1032,27 +1358,16 @@ public class Controller implements Initializable{
 					int stockTicker = Integer.parseInt(tfStockTicker.getText());
 					double price = Double.parseDouble(tfPrice.getText());
 					double volume = Double.parseDouble(tfVolume.getText());
-
-					/*System.out.println("Transaction date:" + datepicker.getValue());
-					System.out.println("Buy / Sell: " + buySellBox.getValue());
-					System.out.println("Stock Ticker: " + stockTicker);
-					System.out.println("Price: " + price);
-					System.out.println("Volume: " + volume);
-					*/
-					Trade newTrade = new Trade(BuySell.Buy, datepicker.getValue(), tfStockTicker.getText(), volume, price);
-					//System.out.println("new trade: " + newTrade);
+					Trade newTrade = new Trade("Buy", datepicker.getValue(), tfStockTicker.getText(), volume, price,portfolioComboBox.getValue());
 					observableListOfTrades.add(newTrade);
-					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
-
-					//fxTransactionLog.getItems().add(newTrade);
-					//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
+					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 				}
 			}
 		});
 
 		// What happens when the Sell button is clicked
 		sellButton.setOnAction(e -> {
-			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true){
+			if(isFieldEmpty(tfStockTicker) == true || isFieldEmpty(tfPrice) == true || isFieldEmpty(tfVolume) == true || !(portfolioComboBox.getValue()!=null)){
 				AlertBox.display("Empty Fields", "Error: Please fill in all info. ");
 			} else{
 				//System.out.println(Double.parseDouble(tfPrice.getText()));
@@ -1069,10 +1384,10 @@ public class Controller implements Initializable{
 					System.out.println("Price: " + price);
 					System.out.println("Volume: " + volume);
 					*/
-					Trade newTrade = new Trade(BuySell.Sell, datepicker.getValue(), tfStockTicker.getText(), volume, price);
+					Trade newTrade = new Trade("Sell", datepicker.getValue(), tfStockTicker.getText(), volume, price, portfolioComboBox.getValue());
 					//System.out.println("new trade: " + newTrade);
 					observableListOfTrades.add(newTrade);
-					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+					clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 
 					//fxTransactionLog.getItems().add(newTrade);
 					//fxTransactionLog.getItems().add(observableListOfTrades.get(observableListOfTrades.size()-1));
@@ -1088,7 +1403,7 @@ public class Controller implements Initializable{
 				double price = Double.parseDouble(tfPrice.getText());
 				WatchListStock newWLStock = new WatchListStock("Last <= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
-				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 
 			}
 		});
@@ -1101,7 +1416,7 @@ public class Controller implements Initializable{
 				double price = Double.parseDouble(tfPrice.getText());				
 				WatchListStock newWLStock = new WatchListStock("Last >= Target", tfStockTicker.getText(),price);
 				observableListOfWatchListStocks.add(newWLStock);
-				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+				clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 			}
 		});
 		
@@ -1115,7 +1430,7 @@ public class Controller implements Initializable{
 
 		// When Cancel Button is clicked
 		cancelButton.setOnAction(e ->{
-			clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume);
+			clearTextfield(datepicker,tfStockTicker,tfPrice,tfVolume,portfolioComboBox);
 		});
 		
 		// When Delete Trade button is clicked
@@ -1155,12 +1470,12 @@ public class Controller implements Initializable{
 	}
 	  
    // clear all texfield in fxStockCalculator
-   public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume){
+   public void clearTextfield(DatePicker datepicker, TextField tfStockTicker, TextField tfPrice, TextField tfVolume, ComboBox portfolioComboBox){
 		datepicker.setValue(LocalDate.now());
 		tfStockTicker.clear();
 		tfPrice.clear(); 
 		tfVolume.clear();
-		tfStockTicker.requestFocus();
+		portfolioComboBox.requestFocus();
 	}
 	
 	public void initializeWatchListPanel(){
@@ -1215,12 +1530,62 @@ public class Controller implements Initializable{
 		fxWatchListPanel.setAlignment(Pos.CENTER);
 	}
    
+	
+	public void handlingIO(Stage primaryStage) throws Exception{
+		this.primaryStage = primaryStage;
+		new FileHandling(fxMenuBar,observableListOfTrades,observableListOfConsolidatedTrades, observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap, saved, this.primaryStage);
+	}
+	
+	public void setPortfolioComboBoxItems(){
+    	portfolioComboBox.setItems(null);
+    	ObservableSet<String> portfolioSet = FXCollections.observableSet();
+    	ObservableList<String> portfolios = FXCollections.observableArrayList();
+    	for(Trade tr: observableListOfTrades){
+    		//System.out.println("combobox: " + fxTransactionLogPortfolio.getCellObservableValue(tr).getValue());
+    		portfolioSet.add(fxTransactionLogPortfolio.getCellObservableValue(tr).getValue());
+		}
+    	portfolios.addAll(portfolioSet);
+    	portfolioComboBox.setItems(portfolios);
+
+	}
+	
+	public void removeEmptyTabs(){
+		for(ListIterator<Tab> iterator = fxTabPaneUpper.getTabs().listIterator(); iterator.hasNext(); ){
+			Tab tab = iterator.next();
+			if(tab!=null){
+				TableView<ConsolidatedTrade> tableView = (TableView<ConsolidatedTrade>) tab.getContent();
+				if(tableView.getItems().size() <= 0){
+					//fxTabPaneUpper.getTabs().remove(tab);
+					iterator.remove();
+				}
+			}
+		}
+		
+	}
    
+	public Label getTextLabel(String text, HPos hpos){
+		Label textLabel = new Label(text);
+		textLabel.setFont(Font.font("Arial",13));
+		if(!text.equals("")){
+			textLabel.setTextFill(Color.DIMGRAY);
+		}
+        GridPane.setHalignment(textLabel, hpos);
+
+		return textLabel;
+	}
+	
 	@Override // This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources){
+		observableListOfTrades.addListener(savedListener);
+		observableListOfConsolidatedTrades.addListener(savedListener);
+		observableListOfWatchListStocks.addListener(savedListener);
+		//fxTransactionLog.getItems().addListener(savedListener);
+		//fxPortfolio.getItems().addListener(savedListener);
+		//fxWatchList.getItems().addListener(savedListener);
+		initializeGridPane();
+		initialiseStockCalculator();
 		initializeFxTransactionLog();
 		initializeFXPortfolio();
-		initialiseStockCalculator();
 		initializeWatchListPanel();
 		initializeFxWatchList();
 		initializeFilteredTable();
@@ -1232,7 +1597,7 @@ public class Controller implements Initializable{
         df.setMaximumFractionDigits(10);
 		fxLabel3.textProperty().bind(Bindings.format(locale,"Asset: %,.3f",initialPortfolio.totalAssetValProperty()));
 		fxLabel4.textProperty().bind(Bindings.format(locale,"uPnl/Pnl: %,.3f/%,.3f",initialPortfolio.sumUPnlProperty(),initialPortfolio.sumPnlProperty()));
-		new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks);
+		//new FileHandling(fxMenuBar, fxFileTree,observableListOfTrades,observableListOfWatchListStocks, ctTickerTargetMap, ctTickerStopLossMap, saved, this.primaryStage);
 	}
 	
 	

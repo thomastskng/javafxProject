@@ -1,4 +1,46 @@
 /* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+.grid {
+    -fx-background-color: black;
+	-fx-control-inner-background:  #3D3D3D;
+    -fx-background-radius: 5.0;
+    -fx-background-insets: 0.0 5.0 0.0 5.0;
+    -fx-padding: 10;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-border-color: white;
+}
+
+
+.table-view.portfolio{
+	-fx-background-color: #3D3D3D;
+	-fx-control-inner-background:  #3D3D3D;
+	-fx-accent:  derive(-fx-control-inner-background, -40%);
+	-fx-cell-hover-color:  derive(-fx-control-inner-background, -20%);
+	-fx-text-fill:  #FFFFFF;
+	-fx-font-weight:  bold;
+	-fx-border-color:  skyblue;
+	-fx-border-width: 2 2 2 2;
+	-fx-table-cell-border-color:  transparent transparent;
+	-fx-table-header-border-color: gold;
+	-fx-table-header-color: gold;
+	-fx-table-column-header-background: gold;
+}
+
+.table-row-cell {
+    -fx-cell-size: 30px;
+    -fx-alignment: center;
+}
+
+.table-view .column-header.portfolioCol {
+	-fx-background-color: gold;
+	-fx-border-width: 0 1 0 1;
+	-fx-border-color: black;
+	-fx-border-insets: 0 0 1 0;
+}
+
+.table-cell {
+    -fx-alignment: CENTER;
+}
 .table-row-cell:new-row {
     -fx-background-color: Yellow;
 }

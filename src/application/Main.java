@@ -35,7 +35,10 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		try {
 	        this.primaryStage = primaryStage;
-			Parent root = FXMLLoader.load(getClass().getResource("Interface.fxml"));
+	        FXMLLoader loader = new FXMLLoader(getClass().getResource("Interface.fxml"));
+	        Parent root = loader.load();
+			Controller controller = loader.<Controller>getController();
+			controller.handlingIO(this.primaryStage);
 			this.primaryStage.setTitle("Stock Tracker");
 			this.primaryStage.setScene(new Scene(root));
 			this.primaryStage.show();
@@ -49,11 +52,9 @@ public class Main extends Application {
 			//layout.getChildren().add(createNewTrade);
 			//BorderPane root = new BorderPane();
 			//Scene scene = new Scene(layout,1200,600);
-			
-			
+
 			root.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -67,105 +68,7 @@ public class Main extends Application {
 		//}
 	//}
 	
-	/**
-	 * Returns the trade file preference, i.e. the file that was last opened.
-	 * The preference is read from the OS specific registry. If no such
-	 * preference can be found, null is returned.
-	 * 
-	 * @return
-	 */
-	public File getTradeFilePath() {
-	    Preferences prefs = Preferences.userNodeForPackage(Main.class);
-	    String filePath = prefs.get("filePath", null);
-	    if (filePath != null) {
-	        return new File(filePath);
-	    } else {
-	        return null;
-	    }
-	}
 
-	/**
-	 * Sets the file path of the currently loaded file. The path is persisted in
-	 * the OS specific registry.
-	 * 
-	 * @param file the file or null to remove the path
-	 */
-	public void setTradeFilePath(File file) {
-	    Preferences prefs = Preferences.userNodeForPackage(Main.class);
-	    if (file != null) {
-	        prefs.put("filePath", file.getPath());
-
-	        // Update the stage title.
-	        primaryStage.setTitle("TradeApp - " + file.getName());
-	    } else {
-	        prefs.remove("filePath");
-
-	        // Update the stage title.
-	        primaryStage.setTitle("TradeApp");
-	    }
-	}
-
-	/**
-    * Loads trade data from the specified file. The current person data will
-    * be replaced.
-    * 
-    * @param file
-    */
-	public void loadPersonDataFromFile(File file) {
-		try {
-			JAXBContext context = JAXBContext.newInstance(TradeListWrapper.class);
-            Unmarshaller um = context.createUnmarshaller();
-
-            // Reading XML from the file and unmarshalling: XML -> Java Objects
-            TradeListWrapper wrapper = (TradeListWrapper) um.unmarshal(file);
-
-            //Controller.getObservableListOfTrades().clear();
-           // Controller.getObservableListOfTrades().addAll(wrapper.getTrades());
-
-            // Save the file path to the registry.
-            setTradeFilePath(file);
-
-        } catch (Exception e) { // catches ANY exception
-        	Alert alert = new Alert(AlertType.ERROR);
-        	alert.setTitle("Error");
-        	alert.setHeaderText("Could not load data");
-        	alert.setContentText("Could not load data from file:\n" + file.getPath());
-        	
-        	alert.showAndWait();
-        }
-    }
-
-    /**
-     * Saves the current trade data to the specified file.
-     * 
-     * @param file
-     */
-    public void savePersonDataToFile(File file) {
-        try {
-            JAXBContext context = JAXBContext.newInstance(TradeListWrapper.class);
-            Marshaller m = context.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-            // Wrapping our person data.
-            TradeListWrapper wrapper = new TradeListWrapper();
-            //wrapper.setTrades(Controller.getObservableListOfTrades());
-
-            // Marshalling and saving XML to the file (Java Objects -> XML)
-            m.marshal(wrapper, file);
-
-            // Save the file path to the registry.
-            setTradeFilePath(file);
-        } catch (Exception e) { // catches ANY exception
-        	Alert alert = new Alert(AlertType.ERROR);
-        	alert.setTitle("Error");
-        	alert.setHeaderText("Could not save data");
-        	alert.setContentText("Could not save data to file:\n" + file.getPath());
-        	
-        	alert.showAndWait();
-        }
-    }
-
-	
 	
 	public static void main(String[] args) {
 		launch(args);

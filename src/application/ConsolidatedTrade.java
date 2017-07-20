@@ -7,6 +7,8 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import javafx.util.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -30,6 +32,8 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.binding.BooleanBinding;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
@@ -41,6 +45,7 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	private DoubleProperty volumeHeld;
 	private DoubleProperty volumeSold;
 	private StringProperty position;
+	private StringProperty portfolio;
 	private DoubleProperty pnl;
 	ArrayList<Double> pnl_i;
 	public final ReadOnlyDoubleWrapper uPnl;
@@ -62,8 +67,6 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	
 	
 	
-	
-	
 	// Concurrent task to get price
 	private ScheduledService<StockScrapedInfo> stockService = new ScheduledService<StockScrapedInfo>() {
 		@Override
@@ -79,20 +82,33 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	
 	
 	
-	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss){
-		this.stockTicker 	= new SimpleStringProperty(stockTicker);
+	public ConsolidatedTrade(String stockTicker, double avgPrice, double volumeHeld, double volumeSold, String position, ArrayList<Double> pnl_i, double target, double stopLoss, String portfolio){
+		this.stockTicker 	= new SimpleStringProperty(stockTicker.replaceFirst("^0+(?!$)", ""));
 		this.avgPrice 		= new SimpleDoubleProperty(avgPrice);
 		this.volumeHeld 	= new SimpleDoubleProperty(volumeHeld);
 		this.volumeSold 	= new SimpleDoubleProperty(volumeSold);
 		this.position 		= new SimpleStringProperty(position);
 		this.pnl_i 			= pnl_i;
 		this.pnl 			= new SimpleDoubleProperty(0);
-		
 		this.target 		= new SimpleDoubleProperty(target);
 		this.stopLoss 		= new SimpleDoubleProperty(stopLoss);
+		this.portfolio		= new SimpleStringProperty(portfolio);
+
 		// multi-threading
-		stockService.setPeriod(Duration.seconds(120));
+		Random rn = new Random();
+		int sec = (30 + rn.nextInt((180-30)+1));
+    	System.out.println("CT random time !!!!!!!!!!!!!!!!!       " + sec + "   "  + LocalDateTime.now());
+		stockService.setPeriod(Duration.seconds(sec));
 		stockService.setOnFailed(e -> stockService.getException().printStackTrace());
+		stockService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+		     @Override
+		     public void handle(WorkerStateEvent t) {
+		 		Random rn = new Random();
+				int sec = (30 + rn.nextInt((180-30)+1));
+		    	System.out.println("CT setOnSucceeded!!!!!!!!!!!!!!!!!       " + sec + "   "  + LocalDateTime.now());
+				stockService.setPeriod(Duration.seconds(sec));
+		     }
+		});
 		this.currentPrice 	= new ReadOnlyDoubleWrapper(0);
 		this.stockName = new ReadOnlyStringWrapper("");
 		this.currentPrice.bind(Bindings.createDoubleBinding(() -> {
@@ -280,7 +296,18 @@ public class ConsolidatedTrade implements Comparable<ConsolidatedTrade>, StockSc
 	public void setStopLoss(double stopLoss){
 		this.stopLoss.set(stopLoss);
 	}
+	
+	public String getPortfolio(){
+		return this.portfolio.get();
+	}
+	
+	public StringProperty portfolioProperty(){
+		return this.portfolio;
+	}
 	 
+	public void setPortfolio(String portfolio){
+		this.portfolio.set(portfolio);
+	}
 	public ReadOnlyDoubleProperty currentPriceProperty(){
 		 return this.currentPrice.getReadOnlyProperty();
 	}

@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.application.Application;
 import java.net.URL;
 import java.time.LocalDate;
+import java.io.Serializable;
 import java.lang.*;
 import javafx.scene.control.cell.*;
 import javafx.collections.*;
@@ -44,10 +45,13 @@ import javafx.collections.ListChangeListener.Change;
 import java.util.Collections.*;
 import java.util.stream.Collectors;
 
-public class Portfolio {
+public class Portfolio implements Serializable{
 
 	HashMap<String, ArrayList<Trade>> portfolio;
-	HashMap<String,ConsolidatedTrade> tempConsolidatedTradeHashMap;
+	HashSet<String> uniquePortfolioSet;
+	HashMap<String,Double> ctTickerTargetMap;
+	HashMap<String,Double> ctTickerStopLossMap;
+	
     /**
      * The data as an observable list of Consolidated Trades.
      */
@@ -62,35 +66,44 @@ public class Portfolio {
 			consolidatedTrade.currentPriceProperty(),
 			consolidatedTrade.targetCautionProperty(),
 			consolidatedTrade.stopLossCautionProperty(),
-			consolidatedTrade.uPnlProperty()
+			consolidatedTrade.uPnlProperty(),
+			consolidatedTrade.portfolioProperty()
 	});
 	
 	private final ReadOnlyDoubleWrapper sumUPnl;
 	private final ReadOnlyDoubleWrapper sumPnl;
 	private final ReadOnlyDoubleWrapper totalAssetVal;
 
+	
 	// Read in tableView and populate HashMap
-	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades){
+	public Portfolio(ObservableList<Trade> observableListOfTrades, ObservableList<ConsolidatedTrade> observableListOfConsolidatedTrades, HashMap<String,Double> ctTickerTargetMap, HashMap<String,Double> ctTickerStopLossMap){
 		this.observableListOfConsolidatedTrades = observableListOfConsolidatedTrades;
+		this.ctTickerTargetMap = ctTickerTargetMap;
+		this.ctTickerStopLossMap = ctTickerStopLossMap;
 		
 		portfolio = new HashMap<String, ArrayList<Trade>>();
-		tempConsolidatedTradeHashMap = new HashMap<String, ConsolidatedTrade>();
+		uniquePortfolioSet = new HashSet<String>();
 		
 		// put trades from transaction log into hashmap
 		for(Trade trade : observableListOfTrades){
-			if(!portfolio.containsKey(trade.getStockTicker())){
+			String portfolioKey =  trade.getPortfolio()+ "~!~" + trade.getStockTicker();
+			uniquePortfolioSet.add(trade.getPortfolio());
+			
+			if(!portfolio.containsKey(portfolioKey)){
 				ArrayList<Trade> tradeHist = new ArrayList<Trade>();
 				tradeHist.add(trade);
-				portfolio.put(trade.getStockTicker(), tradeHist);
+				portfolio.put(portfolioKey, tradeHist);
 			} else{
-				portfolio.get(trade.getStockTicker()).add(trade);
+				portfolio.get(portfolioKey).add(trade);
 			}
 		}
 		
-		// put existing Consolidated trades from existing Portfolio into hashMap
+		// put existing Consolidated trades' Target / StopLoss from existing Portfolio into hashMap
 		if(observableListOfConsolidatedTrades != null){
 			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
-					tempConsolidatedTradeHashMap.put(ct.getStockTicker(), ct);
+					this.ctTickerTargetMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getTarget());
+					this.ctTickerStopLossMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getStopLoss());
+					System.out.println("-----------------------------------------------------------------------------------");
 			}
 		}
 		observableListOfConsolidatedTrades.clear();
@@ -213,7 +226,7 @@ public class Portfolio {
 	// display data structure
 	public void displayDataStructure(){
 		System.out.println("Display Data Structure:");
-		for(Map.Entry<String,ArrayList<Trade>> entry : portfolio.entrySet()){
+		for(Map.Entry<String,ArrayList<Trade>> entry : portfolio.entrySet()){ 
 			System.out.println(entry.getKey() + " : " );
 			for(Iterator<Trade> iterator = portfolio.get(entry.getKey()).iterator(); iterator.hasNext();){
 				Trade tt = iterator.next();
@@ -234,13 +247,15 @@ public class Portfolio {
 	public void generateConsolidatedTrade(){
 		for(Map.Entry<String,ArrayList<Trade>> entry : portfolio.entrySet()){
 			// initialize 8 variables
-			String stockTicker = entry.getKey();
+			String[] portfolioKey = entry.getKey().split("~!~");
+			String stockTicker = portfolioKey[1];
 			double avgPrice = 0;
 			double mktVal = 0;
 			double volumeHeld = 0;
 			double volumeSold = 0;
 			String position = "Open";
 			ArrayList<Double> pnl_i = new ArrayList<Double>();
+			String portfolioName = portfolioKey[0];
 			
 			for(Iterator<Trade> iterator = portfolio.get(entry.getKey()).iterator(); iterator.hasNext();){
 				Trade tr = iterator.next();
@@ -270,12 +285,11 @@ public class Portfolio {
 				position = "Error";
 			}
 			// Create consolidated Trade
-			if(tempConsolidatedTradeHashMap.containsKey(stockTicker)){
-				ConsolidatedTrade tempCT = tempConsolidatedTradeHashMap.get(stockTicker);
-				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,tempCT.getTarget(), tempCT.getStopLoss()));
+			if(this.ctTickerTargetMap.containsKey(entry.getKey()) && this.ctTickerStopLossMap.containsKey(entry.getKey())){
+				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,this.ctTickerTargetMap.get(entry.getKey()), this.ctTickerStopLossMap.get(entry.getKey()), portfolioName));
 
 			} else{
-				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,0,0));
+				this.observableListOfConsolidatedTrades.add(new ConsolidatedTrade(stockTicker, avgPrice, volumeHeld, volumeSold, position, pnl_i,1000,0,portfolioName));
 			}
 		}
 		//return consolidatedTrades;
@@ -291,5 +305,27 @@ public class Portfolio {
 		return this.observableListOfConsolidatedTrades;
 	}
 	
+	public HashMap<String,Double> getCtTickerTargetMap(){
+		if(observableListOfConsolidatedTrades != null){
+			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
+					this.ctTickerTargetMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getTarget());
+			}
+		}
+		return this.ctTickerTargetMap;
+	}
+	
+	public HashMap<String,Double> getCtTickerStopLossMap(){
+		if(observableListOfConsolidatedTrades != null){
+			for(ConsolidatedTrade ct : observableListOfConsolidatedTrades){
+					this.ctTickerStopLossMap.put(ct.getPortfolio() + "~!~" + ct.getStockTicker(), ct.getStopLoss());
+			}
+		}
+		return this.ctTickerStopLossMap;
+	}
+	
+	public HashSet<String> getUniquePortfolioSet(){
+		return uniquePortfolioSet;
+	}
+
 	
 }

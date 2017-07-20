@@ -15,35 +15,9 @@
       <MenuBar fx:id="fxMenuBar" prefHeight="19.0" prefWidth="164.0" BorderPane.alignment="CENTER" />
    </top>
    <center>
-      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="671.0" prefWidth="1102.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="647.0" prefWidth="877.0" style="-fx-border-color: #4F5355;" BorderPane.alignment="CENTER">
         <items>
-            <TabPane prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;">
-              <tabs>
-                <Tab closable="false" text="Portfolio">
-                     <content>
-                        <TableView fx:id="fxPortfolio" editable="true" prefHeight="235.0" prefWidth="783.0" style="-fx-background-color: grey; -fx-control-inner-background: #3D3D3D; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%); -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-border-color: skyblue; -fx-table-cell-border-color: transparent; -fx-table-header-border-color: yellow; -fx-table-header-color: yellow; -fx-table-column-header-background: yellow;" tableMenuButtonVisible="true">
-                          <columns>
-                              <TableColumn fx:id="fxPortfolioStockName" prefWidth="123.0" text="Stock Name" />
-                            <TableColumn fx:id="fxPortfolioTicker" minWidth="50.0" prefWidth="68.0" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-table-column-header-background: yellow; -fx-table-header-color: yellow;" text="Ticker" />
-                            <TableColumn fx:id="fxPortfolioAvgPrice" editable="false" minWidth="65.0" prefWidth="74.0" text="Avg Price" />
-                              <TableColumn fx:id="fxPortfolioVolumeHeld" minWidth="77.0" prefWidth="94.0" text="Volume Held" />
-                              <TableColumn fx:id="fxPortfolioVolumeSold" minWidth="69.0" prefWidth="90.0" text="Volume Sold" />
-                              <TableColumn fx:id="fxPortfolioTarget" minWidth="39.0" prefWidth="61.0" text="Target" />
-                              <TableColumn fx:id="fxPortfolioStopLoss" minWidth="48.0" prefWidth="72.0" text="Stop Loss" />
-                              <TableColumn fx:id="fxPortfolioCurrentPrice" minWidth="67.0" prefWidth="92.0" text="Current Price" />
-                              <TableColumn fx:id="fxPortfolioUPnL" maxWidth="105.0" minWidth="35.0" prefWidth="60.0" text="uPnL" />
-                              <TableColumn fx:id="fxPortfolioPnL" maxWidth="143.0" minWidth="35.0" prefWidth="56.0" text="PnL" />
-                              <TableColumn fx:id="fxPortfolioPosition" minWidth="39.0" prefWidth="69.0" text="Position" />
-                              <TableColumn fx:id="fxPortfolioPnLHistory" minWidth="80.0" prefWidth="108.0" text="PnL History" />
-                          </columns>
-                           <effect>
-                              <Bloom threshold="0.94" />
-                           </effect>
-                        </TableView>
-                     </content>
-                  </Tab>
-              </tabs>
-            </TabPane>
+            <TabPane fx:id="fxTabPaneUpper" prefHeight="322.0" prefWidth="783.0" rotateGraphic="true" style="-fx-background-color: #4F5355; -fx-border-color: #4F5355;" />
             <TabPane fx:id="fxTabPaneLower" prefHeight="280.0" prefWidth="868.0" rotateGraphic="true">
               <tabs>
                 <Tab closable="false" text="Transaction Log">
@@ -58,6 +32,7 @@
                               <TableColumn fx:id="fxTransactionLogVolume" minWidth="21.0" prefWidth="62.0" text="Volume" />
                               <TableColumn fx:id="fxTransactionLogTransactionFee" minWidth="74.0" prefWidth="118.0" text="Transaction Fee" />
                               <TableColumn fx:id="fxTransactionLogCurrentPrice" minWidth="43.0" prefWidth="91.0" text="Current Price" />
+                              <TableColumn fx:id="fxTransactionLogPortfolio" prefWidth="75.0" text="Portfolio" />
                               <TableColumn fx:id="fxTransactionLogRemarks" minWidth="114.0" prefWidth="255.0" text="Remarks" />
                           </columns>
                            <effect>
@@ -96,57 +71,16 @@
       </SplitPane>
    </right>
    <left>
-      <ScrollPane prefHeight="637.0" prefWidth="225.0" BorderPane.alignment="CENTER">
+      <ScrollPane prefHeight="647.0" prefWidth="247.0" BorderPane.alignment="CENTER">
          <content>
-            <SplitPane dividerPositions="0.3183856502242152, 0.6203288490284006" orientation="VERTICAL" prefHeight="671.0" prefWidth="207.0">
+            <SplitPane dividerPositions="0.5440956651718983" orientation="VERTICAL" prefHeight="671.0" prefWidth="231.0">
               <items>
-                  <TitledPane animated="false" mnemonicParsing="true" prefHeight="239.0" prefWidth="189.0" text="file">
-                    <content>
-                      <AnchorPane prefHeight="198.0" prefWidth="175.0">
-                           <children>
-                              <TreeView fx:id="fxFileTree" prefHeight="221.0" prefWidth="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                           </children></AnchorPane>
-                    </content>
-                  </TitledPane>
-                  <VBox fx:id="fxStockCalculator" alignment="CENTER" prefHeight="225.0" prefWidth="177.0" spacing="10.0" />
-                  <VBox prefHeight="316.0" prefWidth="177.0">
+                  <VBox fx:id="fxVBox" prefHeight="238.0" prefWidth="205.0">
                      <children>
-                      <TitledPane fx:id="fxStockLookUp" prefHeight="217.0" prefWidth="205.0" text="Stock Info Lookup" underline="true">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="127.0" prefWidth="159.0">
-                                 <children>
-                                    <Label fx:id="fxLabel2" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="9.0" layoutX="71.0" prefHeight="99.0" prefWidth="112.0" text="Last">
-                                       <font>
-                                          <Font name="System Bold" size="24.0" />
-                                       </font>
-                                    </Label>
-                                    <Label fx:id="fxLabel1" alignment="TOP_LEFT" contentDisplay="TOP" layoutY="1.0" prefHeight="39.0" prefWidth="186.0" text="Name (Ticker)">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font>
-                                    </Label>
-                                    <Label fx:id="fxLabel5" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="62.0" layoutY="76.0" prefHeight="25.0" prefWidth="131.0" text="Lot Size">
-                                       <font>
-                                          <Font size="11.0" />
-                                       </font>
-                                       <padding>
-                                          <Insets right="2.5" />
-                                       </padding>
-                                    </Label>
-                                    <Label fx:id="fxLabel6" alignment="TOP_RIGHT" layoutX="24.0" layoutY="101.0" prefHeight="27.0" prefWidth="179.0" text="Last Update" AnchorPane.rightAnchor="0.0">
-                                       <font>
-                                          <Font size="10.0" />
-                                       </font>
-                                       <padding>
-                                          <Insets right="2.5" />
-                                       </padding>
-                                    </Label>
-                                 </children>
-                              </AnchorPane>
-                        </content>
-                      </TitledPane>
+                      <TitledPane fx:id="fxStockLookUp" prefHeight="413.0" prefWidth="205.0" text="Stock Info Lookup" underline="true" />
                      </children>
                   </VBox>
+                  <VBox fx:id="fxStockCalculator" alignment="CENTER" maxHeight="250.0" minHeight="250.0" prefHeight="225.0" prefWidth="214.0" spacing="10.0" />
               </items>
             </SplitPane>
          </content>
